@@ -87,6 +87,6 @@ func (c *Cartridge) HeaderChecksum() byte {
 	return c.Data[0x14D]
 }
 
-func (c *Cartridge) GlobalChecksum() [2]byte {
-	return *(*[2]byte)(c.Data[0x14E : 0x14F+1])
+func (c *Cartridge) GlobalChecksum() uint16 {
+	return uint16(c.Data[0x14E])<<8 | uint16(c.Data[0x14F])
 }

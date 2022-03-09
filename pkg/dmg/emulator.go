@@ -9,7 +9,6 @@ import (
 type Emulator struct {
 	Cartridge *cart.Cartridge
 	Processor Processor
-	Memory    Memory
 	Graphics  Graphics
 	Clock     Clock
 }
@@ -18,7 +17,6 @@ func New() *Emulator {
 	return &Emulator{
 		Cartridge: nil,
 		Processor: nil,
-		Memory:    nil,
 		Graphics:  nil,
 		Clock:     nil,
 	}
