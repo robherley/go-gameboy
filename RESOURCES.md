@@ -1,0 +1,3 @@
+- https://gbdev.io/pandocs/
+- https://www.youtube.com/watch?v=e87qKixKFME
+- http://www.codeslinger.co.uk/pages/projects/gameboy.html
