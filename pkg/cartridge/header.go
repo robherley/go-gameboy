@@ -1,4 +1,4 @@
-package cart
+package cartridge
 
 import "fmt"
 
@@ -74,9 +74,17 @@ func (c *Cartridge) OldLicenseeCodeString() string {
 	return OldLicenseeToPublisher[c.Data[0x14B]]
 }
 
-func (c *Cartridge) ShouldUseNewLicenseeCode() bool {
+func (c *Cartridge) IsNewLicensee() bool {
 	// https://gbdev.io/pandocs/The_Cartridge_Header.html#014b---old-licensee-code
 	return c.OldLicenseeCode() == 0x33
+}
+
+func (c *Cartridge) LicenseeString() string {
+	if c.IsNewLicensee() {
+		return c.NewLicenseeCodeString()
+	}
+
+	return c.OldLicenseeCodeString()
 }
 
 func (c *Cartridge) MaskRomVersion() byte {

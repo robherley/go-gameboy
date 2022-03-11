@@ -1,4 +1,4 @@
-package cart
+package cartridge
 
 // https://gbdev.io/pandocs/The_Cartridge_Header.html#0147---cartridge-type
 type CartridgeType byte
@@ -29,8 +29,8 @@ const (
 	MBC7_SENSOR_RUMBLE_RAM_BATTERY CartridgeType = 0x22
 	POCKET_CAMERA                  CartridgeType = 0xFC
 	BANDAI_TAMA5                   CartridgeType = 0xFD
-	HuC3                           CartridgeType = 0xFE
-	HuC1_RAM_BATTERY               CartridgeType = 0xFF
+	HUC3                           CartridgeType = 0xFE
+	HUC1_RAM_BATTERY               CartridgeType = 0xFF
 )
 
 var (

@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/robherley/go-dmg/pkg/cart"
+	"github.com/robherley/go-dmg/pkg/cartridge"
 )
 
 func main() {
-	cartridge, err := cart.FromFile("roms/Tetris.gb")
+	cart, err := cartridge.FromFile("roms/Tetris.gb")
 	if err != nil {
 		panic(err)
 	}
 
-	cartridge.PrettyPrint()
+	cart.PrettyPrint()
 }
