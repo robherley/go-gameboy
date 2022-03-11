@@ -3,6 +3,7 @@ package cartridge
 import "fmt"
 
 // https://gbdev.io/pandocs/The_Cartridge_Header.html
+
 func (c *Cartridge) EntryPoint() [4]byte {
 	return *(*[4]byte)(c.Data[0x100 : 0x103+1])
 }
@@ -41,7 +42,7 @@ func (c *Cartridge) NewLicenseeCode() [2]byte {
 	return *(*[2]byte)(c.Data[0x144 : 0x145+1])
 }
 
-func (c *Cartridge) NewLicenseeCodeString() string {
+func (c *Cartridge) NewLicenseeString() string {
 	code := fmt.Sprint(c.NewLicenseeCode())
 	return NewLicenseeToPublisher[code]
 }
@@ -70,7 +71,7 @@ func (c *Cartridge) OldLicenseeCode() byte {
 	return c.Data[0x14B]
 }
 
-func (c *Cartridge) OldLicenseeCodeString() string {
+func (c *Cartridge) OldLicenseeString() string {
 	return OldLicenseeToPublisher[c.Data[0x14B]]
 }
 
@@ -81,10 +82,10 @@ func (c *Cartridge) IsNewLicensee() bool {
 
 func (c *Cartridge) LicenseeString() string {
 	if c.IsNewLicensee() {
-		return c.NewLicenseeCodeString()
+		return c.NewLicenseeString()
 	}
 
-	return c.OldLicenseeCodeString()
+	return c.OldLicenseeString()
 }
 
 func (c *Cartridge) MaskRomVersion() byte {
