@@ -1,3 +1,7 @@
 - https://gbdev.io/pandocs/
 - https://www.youtube.com/watch?v=e87qKixKFME
 - http://www.codeslinger.co.uk/pages/projects/gameboy.html
+- http://www.codeslinger.co.uk/pages/projects/gameboy/files/GB.pdf
+- http://imrannazar.com/GameBoy-Emulation-in-JavaScript
+- https://cturt.github.io/cinoop.html
+- https://www.inspiredpython.com/course/game-boy-emulator/let-s-write-a-game-boy-emulator-in-python
