@@ -1,3 +1,3 @@
-package dmg
+package emulator
 
 type Graphics interface{}

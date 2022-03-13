@@ -1,4 +1,6 @@
-package processor
+package cpu
+
+import "github.com/robherley/go-dmg/internal/bits"
 
 // https://gbdev.io/pandocs/CPU_Registers_and_Flags.html#registers
 
@@ -27,39 +29,39 @@ type Registers struct {
 */
 
 func (r *Registers) GetAF() uint16 {
-	return toU16(r.A, r.F)
+	return bits.To16(r.A, r.F)
 }
 
 func (r *Registers) SetAF(value uint16) {
-	r.A = hi(value)
-	r.F = lo(value)
+	r.A = bits.Hi(value)
+	r.F = bits.Lo(value)
 }
 
 func (r *Registers) GetBC() uint16 {
-	return toU16(r.B, r.C)
+	return bits.To16(r.B, r.C)
 }
 
 func (r *Registers) SetBC(value uint16) {
-	r.B = hi(value)
-	r.C = lo(value)
+	r.B = bits.Hi(value)
+	r.C = bits.Lo(value)
 }
 
 func (r *Registers) GetDE() uint16 {
-	return toU16(r.D, r.E)
+	return bits.To16(r.D, r.E)
 }
 
 func (r *Registers) SetDE(value uint16) {
-	r.D = hi(value)
-	r.E = lo(value)
+	r.D = bits.Hi(value)
+	r.E = bits.Lo(value)
 }
 
 func (r *Registers) GetHL() uint16 {
-	return toU16(r.H, r.L)
+	return bits.To16(r.H, r.L)
 }
 
 func (r *Registers) SetHL(value uint16) {
-	r.H = hi(value)
-	r.L = lo(value)
+	r.H = bits.Hi(value)
+	r.L = bits.Lo(value)
 }
 
 /*
@@ -86,13 +88,13 @@ const (
 )
 
 func (r *Registers) GetFlag(f Flag) bool {
-	return getNBit(r.F, f)
+	return bits.GetNBit(r.F, f)
 }
 
 func (r *Registers) SetFlag(f Flag) {
-	r.F = setNBit(r.F, f)
+	r.F = bits.SetNBit(r.F, f)
 }
 
 func (r *Registers) ClearFlag(f Flag) {
-	r.F = clearNBit(r.F, f)
+	r.F = bits.ClearNBit(r.F, f)
 }

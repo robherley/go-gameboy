@@ -1,4 +1,6 @@
-package instructions
+package cpu
+
+// Extracted from: https://gbdev.io/gb-opcodes/Opcodes.json
 
 type Mnemonic string
 

@@ -1,4 +1,4 @@
-package dmg
+package emulator
 
 // https://gbdev.io/pandocs/Memory_Map.html
 
@@ -7,6 +7,11 @@ const (
 )
 
 func (e *Emulator) BusRead(address uint16) byte {
+	defer func() {
+		// inc program counter on every byte read
+		e.CPU.PC++
+	}()
+
 	if address < ROM_END {
 		return e.Cartridge.Read(address)
 	}

@@ -28,7 +28,6 @@ func FromBytes(data []byte) (*Cartridge, error) {
 
 func (c *Cartridge) PrettyPrint() {
 	fmt.Println("Title:", c.TitleString())
-
 	fmt.Println("Licensee:", c.LicenseeString())
 	fmt.Printf("Size: %dK\n", c.Size/1024)
 	fmt.Println("Header Checksum Match:", c.IsValidHeaderCheckSum())

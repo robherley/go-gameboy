@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/robherley/go-dmg/pkg/cartridge"
+	"github.com/robherley/go-dmg/pkg/emulator"
 )
 
 func main() {
@@ -11,4 +12,7 @@ func main() {
 	}
 
 	cart.PrettyPrint()
+
+	emu := emulator.New(cart)
+	emu.Boot()
 }

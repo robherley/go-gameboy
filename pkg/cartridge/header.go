@@ -1,6 +1,10 @@
 package cartridge
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/robherley/go-dmg/internal/bits"
+)
 
 // https://gbdev.io/pandocs/The_Cartridge_Header.html
 
@@ -97,5 +101,5 @@ func (c *Cartridge) HeaderChecksum() byte {
 }
 
 func (c *Cartridge) GlobalChecksum() uint16 {
-	return uint16(c.Data[0x14E])<<8 | uint16(c.Data[0x14F])
+	return bits.To16(c.Data[0x14E], c.Data[0x14F])
 }
