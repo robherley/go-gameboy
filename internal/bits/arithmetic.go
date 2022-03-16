@@ -1,24 +1,28 @@
 package bits
 
+import "unsafe"
+
 // These are based on go's math/bits package. Unfortunately, they don't have methods for types < uint
 // https://cs.opensource.google/go/go/+/refs/tags/go1.17.8:src/math/bits/bits.go
-// TODO: swap these to generics when go 1.18 is stable
+
+type Uintish interface {
+	// only need these two for gb emulation, should be extenable for any uint type
+	~uint8 | ~uint16
+}
 
 // Addition
 // The sum will overflow if both top bits are set (x & y) or if one of them
 // is (x | y), and a carry from the lower place happened. If such a carry
 // happens, the top bit will be 1 + 0 + 1 = 0 (&^ sum).
 
-func Add8(x, y, carry byte) (byte, byte) {
-	sum := x + y + carry
-	carryOut := ((x & y) | ((x | y) &^ sum)) >> 7
-	return sum, carryOut
-}
+func Add[T Uintish](x, y T, carry byte) (T, byte) {
+	sum := x + y + T(carry)
 
-func Add16(x, y, carry uint16) (uint16, uint16) {
-	sum := x + y + carry
-	carryOut := ((x & y) | ((x | y) &^ sum)) >> 15
-	return sum, carryOut
+	// calculate size of union uint type
+	numBits := unsafe.Sizeof(x) * 8
+
+	carryOut := ((x & y) | ((x | y) &^ sum)) >> (numBits - 1)
+	return sum, byte(carryOut)
 }
 
 // Subtraction
@@ -27,14 +31,12 @@ func Add16(x, y, carry uint16) (uint16, uint16) {
 // from the lower place happens. If that borrow happens, the result will be
 // 1 - 1 - 1 = 0 - 0 - 1 = 1 (& diff).
 
-func Sub8(x, y, borrow byte) (byte, byte) {
-	diff := x - y - borrow
-	borrowOut := ((^x & y) | (^(x ^ y) & diff)) >> 7
-	return diff, borrowOut
-}
+func Sub[T Uintish](x, y T, borrow byte) (T, byte) {
+	diff := x - y - T(borrow)
 
-func Sub16(x, y, borrow uint16) (uint16, uint16) {
-	diff := x - y - borrow
-	borrowOut := ((^x & y) | (^(x ^ y) & diff)) >> 15
-	return diff, borrowOut
+	// calculate size of union uint type
+	numBits := unsafe.Sizeof(x) * 8
+
+	borrowOut := ((^x & y) | (^(x ^ y) & diff)) >> (numBits - 1)
+	return diff, byte(borrowOut)
 }
