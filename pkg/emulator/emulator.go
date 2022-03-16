@@ -3,7 +3,7 @@ package emulator
 import (
 	"fmt"
 
-	"github.com/pterm/pterm"
+	"github.com/robherley/go-dmg/internal/pretty"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 	"github.com/robherley/go-dmg/pkg/cpu"
 )
@@ -33,7 +33,7 @@ func (e *Emulator) NextTick() {
 		panic(err)
 	}
 
-	fmt.Printf("%s PC: 0x%x\n", pterm.NewStyle(pterm.BgCyan, pterm.FgBlack).Sprintf("  %s (0x%02x)  ", instr.Mnemonic, opcode), currentPC)
+	pretty.Instruction(instr.Mnemonic, opcode, currentPC)
 
 	e.CPU.PC++
 	e.NextTick()

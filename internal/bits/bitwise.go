@@ -5,7 +5,7 @@ func Lo(v uint16) byte {
 	return byte(v & 0x00FF)
 }
 
-// Returns the higer byte of uint16
+// Returns the higher byte of uint16
 func Hi(v uint16) byte {
 	return byte(v >> 8)
 }
