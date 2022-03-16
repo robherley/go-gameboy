@@ -59,6 +59,13 @@ func (c *Cartridge) CartridgeType() CartridgeType {
 	return CartridgeType(c.Data[0x147])
 }
 
+func (c *Cartridge) CartridgeTypeString() string {
+	if val, ok := CartridgeTypeStrings[c.CartridgeType()]; ok {
+		return val
+	}
+	return "unknown"
+}
+
 func (c *Cartridge) ROMSize() byte {
 	return c.Data[0x148]
 }

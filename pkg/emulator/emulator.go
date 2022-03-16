@@ -3,29 +3,29 @@ package emulator
 import (
 	"fmt"
 
+	"github.com/pterm/pterm"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 	"github.com/robherley/go-dmg/pkg/cpu"
 )
 
 type Emulator struct {
-	Cartridge *cartridge.Cartridge
-	CPU       *cpu.CPU
+	CPU *cpu.CPU
 }
 
 func New(cart *cartridge.Cartridge) *Emulator {
 	return &Emulator{
-		Cartridge: cart,
-		CPU:       cpu.New(),
+		CPU: cpu.New(cart),
 	}
 }
 
 func (e *Emulator) Boot() {
-	fmt.Println("beep boop")
 	e.NextTick()
 }
 
 func (e *Emulator) NextTick() {
-	opcode := e.BusRead(e.CPU.PC)
+	currentPC := e.CPU.PC
+
+	opcode := e.CPU.Fetch8()
 
 	instr := e.CPU.InstructionForOPCode(opcode)
 	if instr == nil {
@@ -33,7 +33,7 @@ func (e *Emulator) NextTick() {
 		panic(err)
 	}
 
-	fmt.Printf("%s | PC: 0x%x\n", instr.Mnemonic, e.CPU.PC)
+	fmt.Printf("%s PC: 0x%x\n", pterm.NewStyle(pterm.BgCyan, pterm.FgBlack).Sprintf("  %s (0x%02x)  ", instr.Mnemonic, opcode), currentPC)
 
 	e.CPU.PC++
 	e.NextTick()
