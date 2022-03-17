@@ -55,7 +55,7 @@ func Instruction(instr *cpu.Instruction, opcode byte, pc uint16) {
 
 	opsString := ""
 	if instr.Operands != nil {
-		opsString = pterm.Cyan(strings.Join(instr.Operands, " "))
+		opsString = pterm.Cyan(strings.Join(instr.Operands, ", "))
 	}
 
 	instructionString := pterm.NewStyle(pterm.BgCyan, pterm.FgBlack).Sprintf(" %s (%02x) ", instr.Mnemonic, opcode)
