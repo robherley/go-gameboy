@@ -26,7 +26,7 @@ func (c *CPU) Fetch8() byte {
 		c.PC++
 	}()
 
-	return c.MMU.read(c.PC)
+	return c.MMU.read8(c.PC)
 }
 
 func (c *CPU) Fetch16() uint16 {

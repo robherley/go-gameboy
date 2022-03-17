@@ -33,7 +33,9 @@ func (e *Emulator) NextTick() {
 		panic(err)
 	}
 
-	pretty.Instruction(instr.Mnemonic, opcode, currentPC)
+	pretty.Instruction(instr, opcode, currentPC)
+	ticks := instr.Handle(e.CPU)
+	fmt.Println("emulate ticks:", ticks)
 
 	e.CPU.PC++
 	e.NextTick()

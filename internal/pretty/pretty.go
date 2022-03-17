@@ -2,6 +2,7 @@ package pretty
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pterm/pterm"
 	"github.com/robherley/go-dmg/pkg/cartridge"
@@ -47,10 +48,17 @@ func Cart(c *cartridge.Cartridge) {
 	fmt.Println()
 }
 
-func Instruction(mnemonic cpu.Mnemonic, opcode byte, pc uint16) {
+func Instruction(instr *cpu.Instruction, opcode byte, pc uint16) {
 	if Hide {
 		return
 	}
 
-	fmt.Printf("%s PC: 0x%x\n", pterm.NewStyle(pterm.BgCyan, pterm.FgBlack).Sprintf("  %s (0x%02x)  ", mnemonic, opcode), pc)
+	opsString := ""
+	if instr.Operands != nil {
+		opsString = pterm.Cyan(strings.Join(instr.Operands, " "))
+	}
+
+	instructionString := pterm.NewStyle(pterm.BgCyan, pterm.FgBlack).Sprintf(" %s (%02x) ", instr.Mnemonic, opcode)
+
+	fmt.Printf("%s %s PC: 0x%x\n", instructionString, opsString, pc)
 }
