@@ -2,11 +2,9 @@ package pretty
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/pterm/pterm"
 	"github.com/robherley/go-dmg/pkg/cartridge"
-	"github.com/robherley/go-dmg/pkg/cpu"
 )
 
 var Hide = false
@@ -46,19 +44,4 @@ func Cart(c *cartridge.Cartridge) {
 		{"Global Checksum", globalCheck},
 	}).Render()
 	fmt.Println()
-}
-
-func Instruction(instr *cpu.Instruction, opcode byte, pc uint16) {
-	if Hide {
-		return
-	}
-
-	opsString := ""
-	if instr.Operands != nil {
-		opsString = pterm.Cyan(strings.Join(instr.Operands, ", "))
-	}
-
-	instructionString := pterm.NewStyle(pterm.BgCyan, pterm.FgBlack).Sprintf(" %s (%02x) ", instr.Mnemonic, opcode)
-
-	fmt.Printf("%s %s PC: 0x%x\n", instructionString, opsString, pc)
 }

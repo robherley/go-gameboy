@@ -3,9 +3,9 @@ package emulator
 import (
 	"fmt"
 
-	"github.com/robherley/go-dmg/internal/pretty"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 	"github.com/robherley/go-dmg/pkg/cpu"
+	"github.com/robherley/go-dmg/pkg/instructions"
 )
 
 type Emulator struct {
@@ -27,16 +27,13 @@ func (e *Emulator) NextTick() {
 
 	opcode := e.CPU.Fetch8()
 
-	instr := e.CPU.InstructionForOPCode(opcode)
-	if instr == nil {
+	in := instructions.FromOPCode(opcode, false)
+	if in == nil {
 		err := fmt.Errorf("unknown instruction: 0x%x", opcode)
 		panic(err)
 	}
 
-	pretty.Instruction(instr, opcode, currentPC)
-	ticks := instr.Handle(e.CPU)
-	fmt.Println("emulate ticks:", ticks)
+	fmt.Printf("PC 0x%x | Instruction (0x%02x): %+v\n", currentPC, opcode, in)
 
-	e.CPU.PC++
-	e.NextTick()
+	panic("not implemented")
 }

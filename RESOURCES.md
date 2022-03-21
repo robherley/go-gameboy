@@ -6,3 +6,5 @@
 - https://cturt.github.io/cinoop.html
 - https://www.inspiredpython.com/course/game-boy-emulator/let-s-write-a-game-boy-emulator-in-python
 - https://github.com/mvdnes/rboy/
+- https://izik1.github.io/gbops/
+- https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
