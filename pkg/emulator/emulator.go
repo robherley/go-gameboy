@@ -3,6 +3,7 @@ package emulator
 import (
 	"fmt"
 
+	"github.com/robherley/go-dmg/internal/pretty"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 	"github.com/robherley/go-dmg/pkg/cpu"
 	"github.com/robherley/go-dmg/pkg/instructions"
@@ -19,21 +20,26 @@ func New(cart *cartridge.Cartridge) *Emulator {
 }
 
 func (e *Emulator) Boot() {
-	e.NextTick()
+	e.Step()
 }
 
-func (e *Emulator) NextTick() {
+func (e *Emulator) Step() {
 	currentPC := e.CPU.PC
 
 	opcode := e.CPU.Fetch8()
 
 	in := instructions.FromOPCode(opcode, false)
 	if in == nil {
-		err := fmt.Errorf("unknown instruction: 0x%x", opcode)
-		panic(err)
+		panic(fmt.Errorf("unknown instruction: 0x%x", opcode))
 	}
 
-	fmt.Printf("PC 0x%x | Instruction (0x%02x): %+v\n", currentPC, opcode, in)
+	pretty.Instruction(currentPC, opcode, in)
 
-	panic("not implemented")
+	ticks := e.CPU.Process(in)
+	e.doTicks(ticks)
+	e.Step()
+}
+
+func (e *Emulator) doTicks(ticks byte) {
+	fmt.Println("\t🕓", ticks, "ticks")
 }

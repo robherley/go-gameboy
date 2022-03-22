@@ -5,6 +5,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/robherley/go-dmg/pkg/cartridge"
+	"github.com/robherley/go-dmg/pkg/instructions"
 )
 
 var Hide = false
@@ -44,4 +45,30 @@ func Cart(c *cartridge.Cartridge) {
 		{"Global Checksum", globalCheck},
 	}).Render()
 	fmt.Println()
+}
+
+func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
+	pterm.Print()
+	pterm.NewStyle(pterm.FgBlack, pterm.BgWhite, pterm.Bold).Printf(" %04x ", pc)
+	pterm.NewStyle(pterm.FgLightCyan, pterm.BgGray, pterm.Bold).Printf(" % -3s (%02x) ", in.Mnemonic, opcode)
+	pterm.Print(" ")
+	if in.Operands == nil {
+		pterm.FgGray.Println("<nil>")
+	} else {
+		for i, op := range in.Operands {
+			opStr := fmt.Sprintf("%v", op)
+			if _, ok := op.(instructions.Hex); ok {
+				opStr = fmt.Sprintf("%sH", opStr)
+			}
+			if _, ok := op.(instructions.Deref); ok {
+				opStr = fmt.Sprintf("(%s)", opStr)
+			}
+			pterm.FgMagenta.Print(opStr)
+
+			if i != len(in.Operands)-1 {
+				pterm.FgMagenta.Print(", ")
+			}
+		}
+	}
+	pterm.FgGray.Printf(" (len=%d)\n", len(in.Operands))
 }
