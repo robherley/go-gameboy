@@ -52,7 +52,13 @@ const (
 )
 
 // Used as a wrapper to indicate a dereference of a pointer
-type Deref string
+type Deref interface{}
+
+// Used as a wrapper to indicate an increment, used for LD(i)
+type Inc interface{}
+
+// Used as a wrapper to indicate a decrement, used for LD(d)
+type Dec interface{}
 
 // Hexadecminal param, used for RST instructions
 type Hex byte

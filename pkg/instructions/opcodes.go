@@ -158,7 +158,7 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x22: {
 		LD,
-		Operands{Deref(HL), A},
+		Operands{Deref(Inc(HL)), A},
 	},
 	0x23: {
 		INC,
@@ -190,7 +190,7 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x2A: {
 		LD,
-		Operands{A, Deref(HL)},
+		Operands{A, Deref(Inc(HL))},
 	},
 	0x2B: {
 		DEC,
@@ -222,7 +222,7 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x32: {
 		LD,
-		Operands{Deref(HL), A},
+		Operands{Deref(Dec(HL)), A},
 	},
 	0x33: {
 		INC,
@@ -254,7 +254,7 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x3A: {
 		LD,
-		Operands{A, Deref(HL)},
+		Operands{A, Deref(Dec(HL))},
 	},
 	0x3B: {
 		DEC,
@@ -1014,7 +1014,7 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xF8: {
 		LD,
-		Operands{HL, SP, R8},
+		Operands{HL, Inc(SP), R8},
 	},
 	0xF9: {
 		LD,
