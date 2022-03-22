@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 
+	"github.com/robherley/go-dmg/internal/bits"
 	instr "github.com/robherley/go-dmg/pkg/instructions"
 )
 
@@ -34,21 +35,16 @@ func (c *CPU) CheckCondition(cond instr.Condition) bool {
 	panic(fmt.Errorf("invalid condition: %v", cond))
 }
 
-func (c *CPU) resolver(operand interface{}, deref bool) uint16 {
-	if !deref {
-		if _, ok := operand.(instr.Deref); ok {
-			fmt.Println("\tfound deref")
-			return c.resolver(operand, true)
-		}
-	}
-
-	switch typed := operand.(type) {
+func (c *CPU) resolver(operand instr.Operand) uint16 {
+	switch symbol := operand.Symbol.(type) {
 	case instr.Data:
-		return c.resolveData(typed)
+		return c.resolveData(symbol)
 	case instr.Register:
-		return c.resolveRegister(typed)
+		return c.resolveRegister(symbol)
+	case byte:
+		return bits.To16(symbol, 0)
 	default:
-		panic(fmt.Errorf("invalid operand type: %v", typed))
+		panic(fmt.Errorf("invalid operand: %v", symbol))
 	}
 }
 
@@ -98,19 +94,19 @@ func (c *CPU) nop(in *instr.Instruction) byte {
 }
 
 func (c *CPU) jp(in *instr.Instruction) byte {
+	// check if conditional jump
 	if len(in.Operands) > 1 {
-		// has condition
-		cond, ok := in.Operands[0].(instr.Condition)
+		cond, ok := in.Operands[0].Symbol.(instr.Condition)
 		if !ok {
-			panic(fmt.Errorf("JP must have <condition> <operand> for > 1 operand, got: %v", in.Operands[0]))
+			panic(fmt.Errorf("JP must have <condition> <operand> for > 1 operand, got: %v", in.Operands[0].Symbol))
 		}
 		if c.CheckCondition(cond) {
 			// condition passed, so jump to resolved value
-			c.PC = c.resolver(in.Operands[1], false)
+			c.PC = c.resolver(in.Operands[1])
 		}
 	} else {
 		// doesn't have condition, resolve the value
-		c.PC = c.resolver(in.Operands[0], false)
+		c.PC = c.resolver(in.Operands[0])
 	}
 
 	return 4

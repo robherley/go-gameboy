@@ -1,5 +1,6 @@
 package instructions
 
+// https://gbdev.io/pandocs/CPU_Instruction_Set.html
 // https://gbdev.io/gb-opcodes/optables/
 // instructions generated from: https://gbdev.io/gb-opcodes/Opcodes.json
 // script: https://gist.github.com/robherley/836369cbd8eb73a286d017626b8376c1
@@ -26,27 +27,42 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x01: {
 		LD,
-		Operands{BC, D16},
+		[]Operand{
+			{Symbol: BC},
+			{Symbol: D16},
+		},
 	},
 	0x02: {
 		LD,
-		Operands{Deref(BC), A},
+		[]Operand{
+			{Symbol: BC, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0x03: {
 		INC,
-		Operands{BC},
+		[]Operand{
+			{Symbol: BC},
+		},
 	},
 	0x04: {
 		INC,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x05: {
 		DEC,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x06: {
 		LD,
-		Operands{B, D8},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: D8},
+		},
 	},
 	0x07: {
 		RLCA,
@@ -54,31 +70,49 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x08: {
 		LD,
-		Operands{Deref(A16), SP},
+		[]Operand{
+			{Symbol: A16, Deref: true},
+			{Symbol: SP},
+		},
 	},
 	0x09: {
 		ADD,
-		Operands{HL, BC},
+		[]Operand{
+			{Symbol: HL},
+			{Symbol: BC},
+		},
 	},
 	0x0A: {
 		LD,
-		Operands{A, Deref(BC)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: BC, Deref: true},
+		},
 	},
 	0x0B: {
 		DEC,
-		Operands{BC},
+		[]Operand{
+			{Symbol: BC},
+		},
 	},
 	0x0C: {
 		INC,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x0D: {
 		DEC,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x0E: {
 		LD,
-		Operands{C, D8},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: D8},
+		},
 	},
 	0x0F: {
 		RRCA,
@@ -86,31 +120,48 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x10: {
 		STOP,
-		Operands{D8},
+		[]Operand{
+			{Symbol: D8},
+		},
 	},
 	0x11: {
 		LD,
-		Operands{DE, D16},
+		[]Operand{
+			{Symbol: DE},
+			{Symbol: D16},
+		},
 	},
 	0x12: {
 		LD,
-		Operands{Deref(DE), A},
+		[]Operand{
+			{Symbol: DE, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0x13: {
 		INC,
-		Operands{DE},
+		[]Operand{
+			{Symbol: DE},
+		},
 	},
 	0x14: {
 		INC,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x15: {
 		DEC,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x16: {
 		LD,
-		Operands{D, D8},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: D8},
+		},
 	},
 	0x17: {
 		RLA,
@@ -118,31 +169,48 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x18: {
 		JR,
-		Operands{R8},
+		[]Operand{
+			{Symbol: R8},
+		},
 	},
 	0x19: {
 		ADD,
-		Operands{HL, DE},
+		[]Operand{
+			{Symbol: HL},
+			{Symbol: DE},
+		},
 	},
 	0x1A: {
 		LD,
-		Operands{A, Deref(DE)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: DE, Deref: true},
+		},
 	},
 	0x1B: {
 		DEC,
-		Operands{DE},
+		[]Operand{
+			{Symbol: DE},
+		},
 	},
 	0x1C: {
 		INC,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x1D: {
 		DEC,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x1E: {
 		LD,
-		Operands{E, D8},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: D8},
+		},
 	},
 	0x1F: {
 		RRA,
@@ -150,31 +218,49 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x20: {
 		JR,
-		Operands{NZ, R8},
+		[]Operand{
+			{Symbol: NZ},
+			{Symbol: R8},
+		},
 	},
 	0x21: {
 		LD,
-		Operands{HL, D16},
+		[]Operand{
+			{Symbol: HL},
+			{Symbol: D16},
+		},
 	},
 	0x22: {
 		LD,
-		Operands{Deref(Inc(HL)), A},
+		[]Operand{
+			{Symbol: HL, Inc: true, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0x23: {
 		INC,
-		Operands{HL},
+		[]Operand{
+			{Symbol: HL},
+		},
 	},
 	0x24: {
 		INC,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x25: {
 		DEC,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x26: {
 		LD,
-		Operands{H, D8},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: D8},
+		},
 	},
 	0x27: {
 		DAA,
@@ -182,31 +268,49 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x28: {
 		JR,
-		Operands{Z, R8},
+		[]Operand{
+			{Symbol: Z},
+			{Symbol: R8},
+		},
 	},
 	0x29: {
 		ADD,
-		Operands{HL, HL},
+		[]Operand{
+			{Symbol: HL},
+			{Symbol: HL},
+		},
 	},
 	0x2A: {
 		LD,
-		Operands{A, Deref(Inc(HL))},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: HL, Inc: true, Deref: true},
+		},
 	},
 	0x2B: {
 		DEC,
-		Operands{HL},
+		[]Operand{
+			{Symbol: HL},
+		},
 	},
 	0x2C: {
 		INC,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x2D: {
 		DEC,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x2E: {
 		LD,
-		Operands{L, D8},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: D8},
+		},
 	},
 	0x2F: {
 		CPL,
@@ -214,31 +318,49 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x30: {
 		JR,
-		Operands{NC, R8},
+		[]Operand{
+			{Symbol: NC},
+			{Symbol: R8},
+		},
 	},
 	0x31: {
 		LD,
-		Operands{SP, D16},
+		[]Operand{
+			{Symbol: SP},
+			{Symbol: D16},
+		},
 	},
 	0x32: {
 		LD,
-		Operands{Deref(Dec(HL)), A},
+		[]Operand{
+			{Symbol: HL, Dec: true, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0x33: {
 		INC,
-		Operands{SP},
+		[]Operand{
+			{Symbol: SP},
+		},
 	},
 	0x34: {
 		INC,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x35: {
 		DEC,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x36: {
 		LD,
-		Operands{Deref(HL), D8},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: D8},
+		},
 	},
 	0x37: {
 		SCF,
@@ -246,31 +368,49 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x38: {
 		JR,
-		Operands{C, R8},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: R8},
+		},
 	},
 	0x39: {
 		ADD,
-		Operands{HL, SP},
+		[]Operand{
+			{Symbol: HL},
+			{Symbol: SP},
+		},
 	},
 	0x3A: {
 		LD,
-		Operands{A, Deref(Dec(HL))},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: HL, Dec: true, Deref: true},
+		},
 	},
 	0x3B: {
 		DEC,
-		Operands{SP},
+		[]Operand{
+			{Symbol: SP},
+		},
 	},
 	0x3C: {
 		INC,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x3D: {
 		DEC,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x3E: {
 		LD,
-		Operands{A, D8},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D8},
+		},
 	},
 	0x3F: {
 		CCF,
@@ -278,219 +418,381 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x40: {
 		LD,
-		Operands{B, B},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: B},
+		},
 	},
 	0x41: {
 		LD,
-		Operands{B, C},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: C},
+		},
 	},
 	0x42: {
 		LD,
-		Operands{B, D},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: D},
+		},
 	},
 	0x43: {
 		LD,
-		Operands{B, E},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: E},
+		},
 	},
 	0x44: {
 		LD,
-		Operands{B, H},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: H},
+		},
 	},
 	0x45: {
 		LD,
-		Operands{B, L},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: L},
+		},
 	},
 	0x46: {
 		LD,
-		Operands{B, Deref(HL)},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x47: {
 		LD,
-		Operands{B, A},
+		[]Operand{
+			{Symbol: B},
+			{Symbol: A},
+		},
 	},
 	0x48: {
 		LD,
-		Operands{C, B},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: B},
+		},
 	},
 	0x49: {
 		LD,
-		Operands{C, C},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: C},
+		},
 	},
 	0x4A: {
 		LD,
-		Operands{C, D},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: D},
+		},
 	},
 	0x4B: {
 		LD,
-		Operands{C, E},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: E},
+		},
 	},
 	0x4C: {
 		LD,
-		Operands{C, H},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: H},
+		},
 	},
 	0x4D: {
 		LD,
-		Operands{C, L},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: L},
+		},
 	},
 	0x4E: {
 		LD,
-		Operands{C, Deref(HL)},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x4F: {
 		LD,
-		Operands{C, A},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: A},
+		},
 	},
 	0x50: {
 		LD,
-		Operands{D, B},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: B},
+		},
 	},
 	0x51: {
 		LD,
-		Operands{D, C},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: C},
+		},
 	},
 	0x52: {
 		LD,
-		Operands{D, D},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: D},
+		},
 	},
 	0x53: {
 		LD,
-		Operands{D, E},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: E},
+		},
 	},
 	0x54: {
 		LD,
-		Operands{D, H},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: H},
+		},
 	},
 	0x55: {
 		LD,
-		Operands{D, L},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: L},
+		},
 	},
 	0x56: {
 		LD,
-		Operands{D, Deref(HL)},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x57: {
 		LD,
-		Operands{D, A},
+		[]Operand{
+			{Symbol: D},
+			{Symbol: A},
+		},
 	},
 	0x58: {
 		LD,
-		Operands{E, B},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: B},
+		},
 	},
 	0x59: {
 		LD,
-		Operands{E, C},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: C},
+		},
 	},
 	0x5A: {
 		LD,
-		Operands{E, D},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: D},
+		},
 	},
 	0x5B: {
 		LD,
-		Operands{E, E},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: E},
+		},
 	},
 	0x5C: {
 		LD,
-		Operands{E, H},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: H},
+		},
 	},
 	0x5D: {
 		LD,
-		Operands{E, L},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: L},
+		},
 	},
 	0x5E: {
 		LD,
-		Operands{E, Deref(HL)},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x5F: {
 		LD,
-		Operands{E, A},
+		[]Operand{
+			{Symbol: E},
+			{Symbol: A},
+		},
 	},
 	0x60: {
 		LD,
-		Operands{H, B},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: B},
+		},
 	},
 	0x61: {
 		LD,
-		Operands{H, C},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: C},
+		},
 	},
 	0x62: {
 		LD,
-		Operands{H, D},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: D},
+		},
 	},
 	0x63: {
 		LD,
-		Operands{H, E},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: E},
+		},
 	},
 	0x64: {
 		LD,
-		Operands{H, H},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: H},
+		},
 	},
 	0x65: {
 		LD,
-		Operands{H, L},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: L},
+		},
 	},
 	0x66: {
 		LD,
-		Operands{H, Deref(HL)},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x67: {
 		LD,
-		Operands{H, A},
+		[]Operand{
+			{Symbol: H},
+			{Symbol: A},
+		},
 	},
 	0x68: {
 		LD,
-		Operands{L, B},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: B},
+		},
 	},
 	0x69: {
 		LD,
-		Operands{L, C},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: C},
+		},
 	},
 	0x6A: {
 		LD,
-		Operands{L, D},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: D},
+		},
 	},
 	0x6B: {
 		LD,
-		Operands{L, E},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: E},
+		},
 	},
 	0x6C: {
 		LD,
-		Operands{L, H},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: H},
+		},
 	},
 	0x6D: {
 		LD,
-		Operands{L, L},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: L},
+		},
 	},
 	0x6E: {
 		LD,
-		Operands{L, Deref(HL)},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x6F: {
 		LD,
-		Operands{L, A},
+		[]Operand{
+			{Symbol: L},
+			{Symbol: A},
+		},
 	},
 	0x70: {
 		LD,
-		Operands{Deref(HL), B},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: B},
+		},
 	},
 	0x71: {
 		LD,
-		Operands{Deref(HL), C},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: C},
+		},
 	},
 	0x72: {
 		LD,
-		Operands{Deref(HL), D},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: D},
+		},
 	},
 	0x73: {
 		LD,
-		Operands{Deref(HL), E},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: E},
+		},
 	},
 	0x74: {
 		LD,
-		Operands{Deref(HL), H},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: H},
+		},
 	},
 	0x75: {
 		LD,
-		Operands{Deref(HL), L},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: L},
+		},
 	},
 	0x76: {
 		HALT,
@@ -498,331 +800,531 @@ var unprefixed = map[byte]Instruction{
 	},
 	0x77: {
 		LD,
-		Operands{Deref(HL), A},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0x78: {
 		LD,
-		Operands{A, B},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: B},
+		},
 	},
 	0x79: {
 		LD,
-		Operands{A, C},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: C},
+		},
 	},
 	0x7A: {
 		LD,
-		Operands{A, D},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D},
+		},
 	},
 	0x7B: {
 		LD,
-		Operands{A, E},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: E},
+		},
 	},
 	0x7C: {
 		LD,
-		Operands{A, H},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: H},
+		},
 	},
 	0x7D: {
 		LD,
-		Operands{A, L},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: L},
+		},
 	},
 	0x7E: {
 		LD,
-		Operands{A, Deref(HL)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x7F: {
 		LD,
-		Operands{A, A},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: A},
+		},
 	},
 	0x80: {
 		ADD,
-		Operands{A, B},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: B},
+		},
 	},
 	0x81: {
 		ADD,
-		Operands{A, C},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: C},
+		},
 	},
 	0x82: {
 		ADD,
-		Operands{A, D},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D},
+		},
 	},
 	0x83: {
 		ADD,
-		Operands{A, E},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: E},
+		},
 	},
 	0x84: {
 		ADD,
-		Operands{A, H},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: H},
+		},
 	},
 	0x85: {
 		ADD,
-		Operands{A, L},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: L},
+		},
 	},
 	0x86: {
 		ADD,
-		Operands{A, Deref(HL)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x87: {
 		ADD,
-		Operands{A, A},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: A},
+		},
 	},
 	0x88: {
 		ADC,
-		Operands{A, B},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: B},
+		},
 	},
 	0x89: {
 		ADC,
-		Operands{A, C},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: C},
+		},
 	},
 	0x8A: {
 		ADC,
-		Operands{A, D},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D},
+		},
 	},
 	0x8B: {
 		ADC,
-		Operands{A, E},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: E},
+		},
 	},
 	0x8C: {
 		ADC,
-		Operands{A, H},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: H},
+		},
 	},
 	0x8D: {
 		ADC,
-		Operands{A, L},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: L},
+		},
 	},
 	0x8E: {
 		ADC,
-		Operands{A, Deref(HL)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x8F: {
 		ADC,
-		Operands{A, A},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: A},
+		},
 	},
 	0x90: {
 		SUB,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x91: {
 		SUB,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x92: {
 		SUB,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x93: {
 		SUB,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x94: {
 		SUB,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x95: {
 		SUB,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x96: {
 		SUB,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x97: {
 		SUB,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x98: {
 		SBC,
-		Operands{A, B},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: B},
+		},
 	},
 	0x99: {
 		SBC,
-		Operands{A, C},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: C},
+		},
 	},
 	0x9A: {
 		SBC,
-		Operands{A, D},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D},
+		},
 	},
 	0x9B: {
 		SBC,
-		Operands{A, E},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: E},
+		},
 	},
 	0x9C: {
 		SBC,
-		Operands{A, H},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: H},
+		},
 	},
 	0x9D: {
 		SBC,
-		Operands{A, L},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: L},
+		},
 	},
 	0x9E: {
 		SBC,
-		Operands{A, Deref(HL)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x9F: {
 		SBC,
-		Operands{A, A},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: A},
+		},
 	},
 	0xA0: {
 		AND,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0xA1: {
 		AND,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0xA2: {
 		AND,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0xA3: {
 		AND,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0xA4: {
 		AND,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0xA5: {
 		AND,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0xA6: {
 		AND,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xA7: {
 		AND,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0xA8: {
 		XOR,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0xA9: {
 		XOR,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0xAA: {
 		XOR,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0xAB: {
 		XOR,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0xAC: {
 		XOR,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0xAD: {
 		XOR,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0xAE: {
 		XOR,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xAF: {
 		XOR,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0xB0: {
 		OR,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0xB1: {
 		OR,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0xB2: {
 		OR,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0xB3: {
 		OR,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0xB4: {
 		OR,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0xB5: {
 		OR,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0xB6: {
 		OR,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xB7: {
 		OR,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0xB8: {
 		CP,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0xB9: {
 		CP,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0xBA: {
 		CP,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0xBB: {
 		CP,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0xBC: {
 		CP,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0xBD: {
 		CP,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0xBE: {
 		CP,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xBF: {
 		CP,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0xC0: {
 		RET,
-		Operands{NZ},
+		[]Operand{
+			{Symbol: NZ},
+		},
 	},
 	0xC1: {
 		POP,
-		Operands{BC},
+		[]Operand{
+			{Symbol: BC},
+		},
 	},
 	0xC2: {
 		JP,
-		Operands{NZ, A16},
+		[]Operand{
+			{Symbol: NZ},
+			{Symbol: A16},
+		},
 	},
 	0xC3: {
 		JP,
-		Operands{A16},
+		[]Operand{
+			{Symbol: A16},
+		},
 	},
 	0xC4: {
 		CALL,
-		Operands{NZ, A16},
+		[]Operand{
+			{Symbol: NZ},
+			{Symbol: A16},
+		},
 	},
 	0xC5: {
 		PUSH,
-		Operands{BC},
+		[]Operand{
+			{Symbol: BC},
+		},
 	},
 	0xC6: {
 		ADD,
-		Operands{A, D8},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D8},
+		},
 	},
 	0xC7: {
 		RST,
-		Operands{Hex(0x00)},
+		[]Operand{
+			{Symbol: 0x00},
+		},
 	},
 	0xC8: {
 		RET,
-		Operands{Z},
+		[]Operand{
+			{Symbol: Z},
+		},
 	},
 	0xC9: {
 		RET,
@@ -830,7 +1332,10 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xCA: {
 		JP,
-		Operands{Z, A16},
+		[]Operand{
+			{Symbol: Z},
+			{Symbol: A16},
+		},
 	},
 	0xCB: {
 		PREFIX,
@@ -838,31 +1343,48 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xCC: {
 		CALL,
-		Operands{Z, A16},
+		[]Operand{
+			{Symbol: Z},
+			{Symbol: A16},
+		},
 	},
 	0xCD: {
 		CALL,
-		Operands{A16},
+		[]Operand{
+			{Symbol: A16},
+		},
 	},
 	0xCE: {
 		ADC,
-		Operands{A, D8},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D8},
+		},
 	},
 	0xCF: {
 		RST,
-		Operands{Hex(0x08)},
+		[]Operand{
+			{Symbol: 0x08},
+		},
 	},
 	0xD0: {
 		RET,
-		Operands{NC},
+		[]Operand{
+			{Symbol: NC},
+		},
 	},
 	0xD1: {
 		POP,
-		Operands{DE},
+		[]Operand{
+			{Symbol: DE},
+		},
 	},
 	0xD2: {
 		JP,
-		Operands{NC, A16},
+		[]Operand{
+			{Symbol: NC},
+			{Symbol: A16},
+		},
 	},
 	0xD3: {
 		ILLEGAL_D3,
@@ -870,23 +1392,34 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xD4: {
 		CALL,
-		Operands{NC, A16},
+		[]Operand{
+			{Symbol: NC},
+			{Symbol: A16},
+		},
 	},
 	0xD5: {
 		PUSH,
-		Operands{DE},
+		[]Operand{
+			{Symbol: DE},
+		},
 	},
 	0xD6: {
 		SUB,
-		Operands{D8},
+		[]Operand{
+			{Symbol: D8},
+		},
 	},
 	0xD7: {
 		RST,
-		Operands{Hex(0x10)},
+		[]Operand{
+			{Symbol: 0x10},
+		},
 	},
 	0xD8: {
 		RET,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0xD9: {
 		RETI,
@@ -894,7 +1427,10 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xDA: {
 		JP,
-		Operands{Ca, A16},
+		[]Operand{
+			{Symbol: Ca},
+			{Symbol: A16},
+		},
 	},
 	0xDB: {
 		ILLEGAL_DB,
@@ -902,7 +1438,10 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xDC: {
 		CALL,
-		Operands{C, A16},
+		[]Operand{
+			{Symbol: C},
+			{Symbol: A16},
+		},
 	},
 	0xDD: {
 		ILLEGAL_DD,
@@ -910,23 +1449,36 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xDE: {
 		SBC,
-		Operands{A, D8},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: D8},
+		},
 	},
 	0xDF: {
 		RST,
-		Operands{Hex(0x18)},
+		[]Operand{
+			{Symbol: 0x18},
+		},
 	},
 	0xE0: {
 		LDH,
-		Operands{Deref(A8), A},
+		[]Operand{
+			{Symbol: A8, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0xE1: {
 		POP,
-		Operands{HL},
+		[]Operand{
+			{Symbol: HL},
+		},
 	},
 	0xE2: {
 		LD,
-		Operands{Deref(C), A},
+		[]Operand{
+			{Symbol: C, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0xE3: {
 		ILLEGAL_E3,
@@ -938,27 +1490,41 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xE5: {
 		PUSH,
-		Operands{HL},
+		[]Operand{
+			{Symbol: HL},
+		},
 	},
 	0xE6: {
 		AND,
-		Operands{D8},
+		[]Operand{
+			{Symbol: D8},
+		},
 	},
 	0xE7: {
 		RST,
-		Operands{Hex(0x20)},
+		[]Operand{
+			{Symbol: 0x20},
+		},
 	},
 	0xE8: {
 		ADD,
-		Operands{SP, R8},
+		[]Operand{
+			{Symbol: SP},
+			{Symbol: R8},
+		},
 	},
 	0xE9: {
 		JP,
-		Operands{HL},
+		[]Operand{
+			{Symbol: HL},
+		},
 	},
 	0xEA: {
 		LD,
-		Operands{Deref(A16), A},
+		[]Operand{
+			{Symbol: A16, Deref: true},
+			{Symbol: A},
+		},
 	},
 	0xEB: {
 		ILLEGAL_EB,
@@ -974,23 +1540,35 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xEE: {
 		XOR,
-		Operands{D8},
+		[]Operand{
+			{Symbol: D8},
+		},
 	},
 	0xEF: {
 		RST,
-		Operands{Hex(0x28)},
+		[]Operand{
+			{Symbol: 0x28},
+		},
 	},
 	0xF0: {
 		LDH,
-		Operands{A, Deref(A8)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: A8, Deref: true},
+		},
 	},
 	0xF1: {
 		POP,
-		Operands{AF},
+		[]Operand{
+			{Symbol: AF},
+		},
 	},
 	0xF2: {
 		LD,
-		Operands{A, Deref(C)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: C, Deref: true},
+		},
 	},
 	0xF3: {
 		DI,
@@ -1002,27 +1580,43 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xF5: {
 		PUSH,
-		Operands{AF},
+		[]Operand{
+			{Symbol: AF},
+		},
 	},
 	0xF6: {
 		OR,
-		Operands{D8},
+		[]Operand{
+			{Symbol: D8},
+		},
 	},
 	0xF7: {
 		RST,
-		Operands{Hex(0x30)},
+		[]Operand{
+			{Symbol: 0x30},
+		},
 	},
 	0xF8: {
 		LD,
-		Operands{HL, Inc(SP), R8},
+		[]Operand{
+			{Symbol: HL},
+			{Symbol: SP, Inc: true},
+			{Symbol: R8},
+		},
 	},
 	0xF9: {
 		LD,
-		Operands{SP, HL},
+		[]Operand{
+			{Symbol: SP},
+			{Symbol: HL},
+		},
 	},
 	0xFA: {
 		LD,
-		Operands{A, Deref(A16)},
+		[]Operand{
+			{Symbol: A},
+			{Symbol: A16, Deref: true},
+		},
 	},
 	0xFB: {
 		EI,
@@ -1038,1037 +1632,1744 @@ var unprefixed = map[byte]Instruction{
 	},
 	0xFE: {
 		CP,
-		Operands{D8},
+		[]Operand{
+			{Symbol: D8},
+		},
 	},
 	0xFF: {
 		RST,
-		Operands{Hex(0x38)},
+		[]Operand{
+			{Symbol: 0x38},
+		},
 	},
 }
-
 var cbprefixed = map[byte]Instruction{
 	0x00: {
 		RLC,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x01: {
 		RLC,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x02: {
 		RLC,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x03: {
 		RLC,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x04: {
 		RLC,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x05: {
 		RLC,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x06: {
 		RLC,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x07: {
 		RLC,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x08: {
 		RRC,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x09: {
 		RRC,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x0A: {
 		RRC,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x0B: {
 		RRC,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x0C: {
 		RRC,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x0D: {
 		RRC,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x0E: {
 		RRC,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x0F: {
 		RRC,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x10: {
 		RL,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x11: {
 		RL,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x12: {
 		RL,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x13: {
 		RL,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x14: {
 		RL,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x15: {
 		RL,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x16: {
 		RL,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x17: {
 		RL,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x18: {
 		RR,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x19: {
 		RR,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x1A: {
 		RR,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x1B: {
 		RR,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x1C: {
 		RR,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x1D: {
 		RR,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x1E: {
 		RR,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x1F: {
 		RR,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x20: {
 		SLA,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x21: {
 		SLA,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x22: {
 		SLA,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x23: {
 		SLA,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x24: {
 		SLA,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x25: {
 		SLA,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x26: {
 		SLA,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x27: {
 		SLA,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x28: {
 		SRA,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x29: {
 		SRA,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x2A: {
 		SRA,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x2B: {
 		SRA,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x2C: {
 		SRA,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x2D: {
 		SRA,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x2E: {
 		SRA,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x2F: {
 		SRA,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x30: {
 		SWAP,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x31: {
 		SWAP,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x32: {
 		SWAP,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x33: {
 		SWAP,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x34: {
 		SWAP,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x35: {
 		SWAP,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x36: {
 		SWAP,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x37: {
 		SWAP,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x38: {
 		SRL,
-		Operands{B},
+		[]Operand{
+			{Symbol: B},
+		},
 	},
 	0x39: {
 		SRL,
-		Operands{C},
+		[]Operand{
+			{Symbol: C},
+		},
 	},
 	0x3A: {
 		SRL,
-		Operands{D},
+		[]Operand{
+			{Symbol: D},
+		},
 	},
 	0x3B: {
 		SRL,
-		Operands{E},
+		[]Operand{
+			{Symbol: E},
+		},
 	},
 	0x3C: {
 		SRL,
-		Operands{H},
+		[]Operand{
+			{Symbol: H},
+		},
 	},
 	0x3D: {
 		SRL,
-		Operands{L},
+		[]Operand{
+			{Symbol: L},
+		},
 	},
 	0x3E: {
 		SRL,
-		Operands{Deref(HL)},
+		[]Operand{
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x3F: {
 		SRL,
-		Operands{A},
+		[]Operand{
+			{Symbol: A},
+		},
 	},
 	0x40: {
 		BIT,
-		Operands{Bit(0), B},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: B},
+		},
 	},
 	0x41: {
 		BIT,
-		Operands{Bit(0), C},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: C},
+		},
 	},
 	0x42: {
 		BIT,
-		Operands{Bit(0), D},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: D},
+		},
 	},
 	0x43: {
 		BIT,
-		Operands{Bit(0), E},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: E},
+		},
 	},
 	0x44: {
 		BIT,
-		Operands{Bit(0), H},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: H},
+		},
 	},
 	0x45: {
 		BIT,
-		Operands{Bit(0), L},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: L},
+		},
 	},
 	0x46: {
 		BIT,
-		Operands{Bit(0), Deref(HL)},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x47: {
 		BIT,
-		Operands{Bit(0), A},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: A},
+		},
 	},
 	0x48: {
 		BIT,
-		Operands{Bit(1), B},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: B},
+		},
 	},
 	0x49: {
 		BIT,
-		Operands{Bit(1), C},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: C},
+		},
 	},
 	0x4A: {
 		BIT,
-		Operands{Bit(1), D},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: D},
+		},
 	},
 	0x4B: {
 		BIT,
-		Operands{Bit(1), E},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: E},
+		},
 	},
 	0x4C: {
 		BIT,
-		Operands{Bit(1), H},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: H},
+		},
 	},
 	0x4D: {
 		BIT,
-		Operands{Bit(1), L},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: L},
+		},
 	},
 	0x4E: {
 		BIT,
-		Operands{Bit(1), Deref(HL)},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x4F: {
 		BIT,
-		Operands{Bit(1), A},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: A},
+		},
 	},
 	0x50: {
 		BIT,
-		Operands{Bit(2), B},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: B},
+		},
 	},
 	0x51: {
 		BIT,
-		Operands{Bit(2), C},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: C},
+		},
 	},
 	0x52: {
 		BIT,
-		Operands{Bit(2), D},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: D},
+		},
 	},
 	0x53: {
 		BIT,
-		Operands{Bit(2), E},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: E},
+		},
 	},
 	0x54: {
 		BIT,
-		Operands{Bit(2), H},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: H},
+		},
 	},
 	0x55: {
 		BIT,
-		Operands{Bit(2), L},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: L},
+		},
 	},
 	0x56: {
 		BIT,
-		Operands{Bit(2), Deref(HL)},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x57: {
 		BIT,
-		Operands{Bit(2), A},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: A},
+		},
 	},
 	0x58: {
 		BIT,
-		Operands{Bit(3), B},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: B},
+		},
 	},
 	0x59: {
 		BIT,
-		Operands{Bit(3), C},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: C},
+		},
 	},
 	0x5A: {
 		BIT,
-		Operands{Bit(3), D},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: D},
+		},
 	},
 	0x5B: {
 		BIT,
-		Operands{Bit(3), E},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: E},
+		},
 	},
 	0x5C: {
 		BIT,
-		Operands{Bit(3), H},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: H},
+		},
 	},
 	0x5D: {
 		BIT,
-		Operands{Bit(3), L},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: L},
+		},
 	},
 	0x5E: {
 		BIT,
-		Operands{Bit(3), Deref(HL)},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x5F: {
 		BIT,
-		Operands{Bit(3), A},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: A},
+		},
 	},
 	0x60: {
 		BIT,
-		Operands{Bit(4), B},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: B},
+		},
 	},
 	0x61: {
 		BIT,
-		Operands{Bit(4), C},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: C},
+		},
 	},
 	0x62: {
 		BIT,
-		Operands{Bit(4), D},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: D},
+		},
 	},
 	0x63: {
 		BIT,
-		Operands{Bit(4), E},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: E},
+		},
 	},
 	0x64: {
 		BIT,
-		Operands{Bit(4), H},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: H},
+		},
 	},
 	0x65: {
 		BIT,
-		Operands{Bit(4), L},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: L},
+		},
 	},
 	0x66: {
 		BIT,
-		Operands{Bit(4), Deref(HL)},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x67: {
 		BIT,
-		Operands{Bit(4), A},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: A},
+		},
 	},
 	0x68: {
 		BIT,
-		Operands{Bit(5), B},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: B},
+		},
 	},
 	0x69: {
 		BIT,
-		Operands{Bit(5), C},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: C},
+		},
 	},
 	0x6A: {
 		BIT,
-		Operands{Bit(5), D},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: D},
+		},
 	},
 	0x6B: {
 		BIT,
-		Operands{Bit(5), E},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: E},
+		},
 	},
 	0x6C: {
 		BIT,
-		Operands{Bit(5), H},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: H},
+		},
 	},
 	0x6D: {
 		BIT,
-		Operands{Bit(5), L},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: L},
+		},
 	},
 	0x6E: {
 		BIT,
-		Operands{Bit(5), Deref(HL)},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x6F: {
 		BIT,
-		Operands{Bit(5), A},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: A},
+		},
 	},
 	0x70: {
 		BIT,
-		Operands{Bit(6), B},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: B},
+		},
 	},
 	0x71: {
 		BIT,
-		Operands{Bit(6), C},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: C},
+		},
 	},
 	0x72: {
 		BIT,
-		Operands{Bit(6), D},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: D},
+		},
 	},
 	0x73: {
 		BIT,
-		Operands{Bit(6), E},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: E},
+		},
 	},
 	0x74: {
 		BIT,
-		Operands{Bit(6), H},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: H},
+		},
 	},
 	0x75: {
 		BIT,
-		Operands{Bit(6), L},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: L},
+		},
 	},
 	0x76: {
 		BIT,
-		Operands{Bit(6), Deref(HL)},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x77: {
 		BIT,
-		Operands{Bit(6), A},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: A},
+		},
 	},
 	0x78: {
 		BIT,
-		Operands{Bit(7), B},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: B},
+		},
 	},
 	0x79: {
 		BIT,
-		Operands{Bit(7), C},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: C},
+		},
 	},
 	0x7A: {
 		BIT,
-		Operands{Bit(7), D},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: D},
+		},
 	},
 	0x7B: {
 		BIT,
-		Operands{Bit(7), E},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: E},
+		},
 	},
 	0x7C: {
 		BIT,
-		Operands{Bit(7), H},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: H},
+		},
 	},
 	0x7D: {
 		BIT,
-		Operands{Bit(7), L},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: L},
+		},
 	},
 	0x7E: {
 		BIT,
-		Operands{Bit(7), Deref(HL)},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x7F: {
 		BIT,
-		Operands{Bit(7), A},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: A},
+		},
 	},
 	0x80: {
 		RES,
-		Operands{Bit(0), B},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: B},
+		},
 	},
 	0x81: {
 		RES,
-		Operands{Bit(0), C},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: C},
+		},
 	},
 	0x82: {
 		RES,
-		Operands{Bit(0), D},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: D},
+		},
 	},
 	0x83: {
 		RES,
-		Operands{Bit(0), E},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: E},
+		},
 	},
 	0x84: {
 		RES,
-		Operands{Bit(0), H},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: H},
+		},
 	},
 	0x85: {
 		RES,
-		Operands{Bit(0), L},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: L},
+		},
 	},
 	0x86: {
 		RES,
-		Operands{Bit(0), Deref(HL)},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x87: {
 		RES,
-		Operands{Bit(0), A},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: A},
+		},
 	},
 	0x88: {
 		RES,
-		Operands{Bit(1), B},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: B},
+		},
 	},
 	0x89: {
 		RES,
-		Operands{Bit(1), C},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: C},
+		},
 	},
 	0x8A: {
 		RES,
-		Operands{Bit(1), D},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: D},
+		},
 	},
 	0x8B: {
 		RES,
-		Operands{Bit(1), E},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: E},
+		},
 	},
 	0x8C: {
 		RES,
-		Operands{Bit(1), H},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: H},
+		},
 	},
 	0x8D: {
 		RES,
-		Operands{Bit(1), L},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: L},
+		},
 	},
 	0x8E: {
 		RES,
-		Operands{Bit(1), Deref(HL)},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x8F: {
 		RES,
-		Operands{Bit(1), A},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: A},
+		},
 	},
 	0x90: {
 		RES,
-		Operands{Bit(2), B},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: B},
+		},
 	},
 	0x91: {
 		RES,
-		Operands{Bit(2), C},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: C},
+		},
 	},
 	0x92: {
 		RES,
-		Operands{Bit(2), D},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: D},
+		},
 	},
 	0x93: {
 		RES,
-		Operands{Bit(2), E},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: E},
+		},
 	},
 	0x94: {
 		RES,
-		Operands{Bit(2), H},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: H},
+		},
 	},
 	0x95: {
 		RES,
-		Operands{Bit(2), L},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: L},
+		},
 	},
 	0x96: {
 		RES,
-		Operands{Bit(2), Deref(HL)},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x97: {
 		RES,
-		Operands{Bit(2), A},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: A},
+		},
 	},
 	0x98: {
 		RES,
-		Operands{Bit(3), B},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: B},
+		},
 	},
 	0x99: {
 		RES,
-		Operands{Bit(3), C},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: C},
+		},
 	},
 	0x9A: {
 		RES,
-		Operands{Bit(3), D},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: D},
+		},
 	},
 	0x9B: {
 		RES,
-		Operands{Bit(3), E},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: E},
+		},
 	},
 	0x9C: {
 		RES,
-		Operands{Bit(3), H},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: H},
+		},
 	},
 	0x9D: {
 		RES,
-		Operands{Bit(3), L},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: L},
+		},
 	},
 	0x9E: {
 		RES,
-		Operands{Bit(3), Deref(HL)},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0x9F: {
 		RES,
-		Operands{Bit(3), A},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: A},
+		},
 	},
 	0xA0: {
 		RES,
-		Operands{Bit(4), B},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: B},
+		},
 	},
 	0xA1: {
 		RES,
-		Operands{Bit(4), C},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: C},
+		},
 	},
 	0xA2: {
 		RES,
-		Operands{Bit(4), D},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: D},
+		},
 	},
 	0xA3: {
 		RES,
-		Operands{Bit(4), E},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: E},
+		},
 	},
 	0xA4: {
 		RES,
-		Operands{Bit(4), H},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: H},
+		},
 	},
 	0xA5: {
 		RES,
-		Operands{Bit(4), L},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: L},
+		},
 	},
 	0xA6: {
 		RES,
-		Operands{Bit(4), Deref(HL)},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xA7: {
 		RES,
-		Operands{Bit(4), A},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: A},
+		},
 	},
 	0xA8: {
 		RES,
-		Operands{Bit(5), B},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: B},
+		},
 	},
 	0xA9: {
 		RES,
-		Operands{Bit(5), C},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: C},
+		},
 	},
 	0xAA: {
 		RES,
-		Operands{Bit(5), D},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: D},
+		},
 	},
 	0xAB: {
 		RES,
-		Operands{Bit(5), E},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: E},
+		},
 	},
 	0xAC: {
 		RES,
-		Operands{Bit(5), H},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: H},
+		},
 	},
 	0xAD: {
 		RES,
-		Operands{Bit(5), L},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: L},
+		},
 	},
 	0xAE: {
 		RES,
-		Operands{Bit(5), Deref(HL)},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xAF: {
 		RES,
-		Operands{Bit(5), A},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: A},
+		},
 	},
 	0xB0: {
 		RES,
-		Operands{Bit(6), B},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: B},
+		},
 	},
 	0xB1: {
 		RES,
-		Operands{Bit(6), C},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: C},
+		},
 	},
 	0xB2: {
 		RES,
-		Operands{Bit(6), D},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: D},
+		},
 	},
 	0xB3: {
 		RES,
-		Operands{Bit(6), E},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: E},
+		},
 	},
 	0xB4: {
 		RES,
-		Operands{Bit(6), H},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: H},
+		},
 	},
 	0xB5: {
 		RES,
-		Operands{Bit(6), L},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: L},
+		},
 	},
 	0xB6: {
 		RES,
-		Operands{Bit(6), Deref(HL)},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xB7: {
 		RES,
-		Operands{Bit(6), A},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: A},
+		},
 	},
 	0xB8: {
 		RES,
-		Operands{Bit(7), B},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: B},
+		},
 	},
 	0xB9: {
 		RES,
-		Operands{Bit(7), C},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: C},
+		},
 	},
 	0xBA: {
 		RES,
-		Operands{Bit(7), D},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: D},
+		},
 	},
 	0xBB: {
 		RES,
-		Operands{Bit(7), E},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: E},
+		},
 	},
 	0xBC: {
 		RES,
-		Operands{Bit(7), H},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: H},
+		},
 	},
 	0xBD: {
 		RES,
-		Operands{Bit(7), L},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: L},
+		},
 	},
 	0xBE: {
 		RES,
-		Operands{Bit(7), Deref(HL)},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xBF: {
 		RES,
-		Operands{Bit(7), A},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: A},
+		},
 	},
 	0xC0: {
 		SET,
-		Operands{Bit(0), B},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: B},
+		},
 	},
 	0xC1: {
 		SET,
-		Operands{Bit(0), C},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: C},
+		},
 	},
 	0xC2: {
 		SET,
-		Operands{Bit(0), D},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: D},
+		},
 	},
 	0xC3: {
 		SET,
-		Operands{Bit(0), E},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: E},
+		},
 	},
 	0xC4: {
 		SET,
-		Operands{Bit(0), H},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: H},
+		},
 	},
 	0xC5: {
 		SET,
-		Operands{Bit(0), L},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: L},
+		},
 	},
 	0xC6: {
 		SET,
-		Operands{Bit(0), Deref(HL)},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xC7: {
 		SET,
-		Operands{Bit(0), A},
+		[]Operand{
+			{Symbol: 0},
+			{Symbol: A},
+		},
 	},
 	0xC8: {
 		SET,
-		Operands{Bit(1), B},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: B},
+		},
 	},
 	0xC9: {
 		SET,
-		Operands{Bit(1), C},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: C},
+		},
 	},
 	0xCA: {
 		SET,
-		Operands{Bit(1), D},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: D},
+		},
 	},
 	0xCB: {
 		SET,
-		Operands{Bit(1), E},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: E},
+		},
 	},
 	0xCC: {
 		SET,
-		Operands{Bit(1), H},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: H},
+		},
 	},
 	0xCD: {
 		SET,
-		Operands{Bit(1), L},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: L},
+		},
 	},
 	0xCE: {
 		SET,
-		Operands{Bit(1), Deref(HL)},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xCF: {
 		SET,
-		Operands{Bit(1), A},
+		[]Operand{
+			{Symbol: 1},
+			{Symbol: A},
+		},
 	},
 	0xD0: {
 		SET,
-		Operands{Bit(2), B},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: B},
+		},
 	},
 	0xD1: {
 		SET,
-		Operands{Bit(2), C},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: C},
+		},
 	},
 	0xD2: {
 		SET,
-		Operands{Bit(2), D},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: D},
+		},
 	},
 	0xD3: {
 		SET,
-		Operands{Bit(2), E},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: E},
+		},
 	},
 	0xD4: {
 		SET,
-		Operands{Bit(2), H},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: H},
+		},
 	},
 	0xD5: {
 		SET,
-		Operands{Bit(2), L},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: L},
+		},
 	},
 	0xD6: {
 		SET,
-		Operands{Bit(2), Deref(HL)},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xD7: {
 		SET,
-		Operands{Bit(2), A},
+		[]Operand{
+			{Symbol: 2},
+			{Symbol: A},
+		},
 	},
 	0xD8: {
 		SET,
-		Operands{Bit(3), B},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: B},
+		},
 	},
 	0xD9: {
 		SET,
-		Operands{Bit(3), C},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: C},
+		},
 	},
 	0xDA: {
 		SET,
-		Operands{Bit(3), D},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: D},
+		},
 	},
 	0xDB: {
 		SET,
-		Operands{Bit(3), E},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: E},
+		},
 	},
 	0xDC: {
 		SET,
-		Operands{Bit(3), H},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: H},
+		},
 	},
 	0xDD: {
 		SET,
-		Operands{Bit(3), L},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: L},
+		},
 	},
 	0xDE: {
 		SET,
-		Operands{Bit(3), Deref(HL)},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xDF: {
 		SET,
-		Operands{Bit(3), A},
+		[]Operand{
+			{Symbol: 3},
+			{Symbol: A},
+		},
 	},
 	0xE0: {
 		SET,
-		Operands{Bit(4), B},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: B},
+		},
 	},
 	0xE1: {
 		SET,
-		Operands{Bit(4), C},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: C},
+		},
 	},
 	0xE2: {
 		SET,
-		Operands{Bit(4), D},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: D},
+		},
 	},
 	0xE3: {
 		SET,
-		Operands{Bit(4), E},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: E},
+		},
 	},
 	0xE4: {
 		SET,
-		Operands{Bit(4), H},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: H},
+		},
 	},
 	0xE5: {
 		SET,
-		Operands{Bit(4), L},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: L},
+		},
 	},
 	0xE6: {
 		SET,
-		Operands{Bit(4), Deref(HL)},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xE7: {
 		SET,
-		Operands{Bit(4), A},
+		[]Operand{
+			{Symbol: 4},
+			{Symbol: A},
+		},
 	},
 	0xE8: {
 		SET,
-		Operands{Bit(5), B},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: B},
+		},
 	},
 	0xE9: {
 		SET,
-		Operands{Bit(5), C},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: C},
+		},
 	},
 	0xEA: {
 		SET,
-		Operands{Bit(5), D},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: D},
+		},
 	},
 	0xEB: {
 		SET,
-		Operands{Bit(5), E},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: E},
+		},
 	},
 	0xEC: {
 		SET,
-		Operands{Bit(5), H},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: H},
+		},
 	},
 	0xED: {
 		SET,
-		Operands{Bit(5), L},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: L},
+		},
 	},
 	0xEE: {
 		SET,
-		Operands{Bit(5), Deref(HL)},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xEF: {
 		SET,
-		Operands{Bit(5), A},
+		[]Operand{
+			{Symbol: 5},
+			{Symbol: A},
+		},
 	},
 	0xF0: {
 		SET,
-		Operands{Bit(6), B},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: B},
+		},
 	},
 	0xF1: {
 		SET,
-		Operands{Bit(6), C},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: C},
+		},
 	},
 	0xF2: {
 		SET,
-		Operands{Bit(6), D},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: D},
+		},
 	},
 	0xF3: {
 		SET,
-		Operands{Bit(6), E},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: E},
+		},
 	},
 	0xF4: {
 		SET,
-		Operands{Bit(6), H},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: H},
+		},
 	},
 	0xF5: {
 		SET,
-		Operands{Bit(6), L},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: L},
+		},
 	},
 	0xF6: {
 		SET,
-		Operands{Bit(6), Deref(HL)},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xF7: {
 		SET,
-		Operands{Bit(6), A},
+		[]Operand{
+			{Symbol: 6},
+			{Symbol: A},
+		},
 	},
 	0xF8: {
 		SET,
-		Operands{Bit(7), B},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: B},
+		},
 	},
 	0xF9: {
 		SET,
-		Operands{Bit(7), C},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: C},
+		},
 	},
 	0xFA: {
 		SET,
-		Operands{Bit(7), D},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: D},
+		},
 	},
 	0xFB: {
 		SET,
-		Operands{Bit(7), E},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: E},
+		},
 	},
 	0xFC: {
 		SET,
-		Operands{Bit(7), H},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: H},
+		},
 	},
 	0xFD: {
 		SET,
-		Operands{Bit(7), L},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: L},
+		},
 	},
 	0xFE: {
 		SET,
-		Operands{Bit(7), Deref(HL)},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: HL, Deref: true},
+		},
 	},
 	0xFF: {
 		SET,
-		Operands{Bit(7), A},
+		[]Operand{
+			{Symbol: 7},
+			{Symbol: A},
+		},
 	},
 }

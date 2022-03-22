@@ -48,22 +48,35 @@ func Cart(c *cartridge.Cartridge) {
 }
 
 func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
-	pterm.Print()
+	if Hide {
+		return
+	}
+
 	pterm.NewStyle(pterm.FgBlack, pterm.BgWhite, pterm.Bold).Printf(" %04x ", pc)
 	pterm.NewStyle(pterm.FgLightCyan, pterm.BgGray, pterm.Bold).Printf(" % -3s (%02x) ", in.Mnemonic, opcode)
 	pterm.Print(" ")
 	if in.Operands == nil {
-		pterm.FgGray.Println("<nil>")
+		pterm.FgMagenta.Print("<nil>")
 	} else {
 		for i, op := range in.Operands {
-			opStr := fmt.Sprintf("%v", op)
-			if _, ok := op.(instructions.Hex); ok {
-				opStr = fmt.Sprintf("%sH", opStr)
+			symbol := fmt.Sprintf("%v", op.Symbol)
+			if bite, ok := op.Symbol.(byte); ok {
+				symbol = fmt.Sprintf("0x%02x", bite)
 			}
-			if _, ok := op.(instructions.Deref); ok {
-				opStr = fmt.Sprintf("(%s)", opStr)
+
+			if op.Inc {
+				symbol += "+"
 			}
-			pterm.FgMagenta.Print(opStr)
+
+			if op.Dec {
+				symbol += "-"
+			}
+
+			if op.Deref {
+				symbol = fmt.Sprintf("(%s)", symbol)
+			}
+
+			pterm.FgMagenta.Print(symbol)
 
 			if i != len(in.Operands)-1 {
 				pterm.FgMagenta.Print(", ")

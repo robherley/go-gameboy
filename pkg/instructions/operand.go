@@ -1,5 +1,17 @@
 package instructions
 
+type Operand struct {
+	// Symbol defines what kind of operand, and where to resolve the data
+	Symbol any
+	// Deref indicates a dereference of a pointer, ie: HL vs (HL)
+	Deref bool
+	// Inc indicates an increment, used for LDI, ie: HL vs HL+
+	Inc bool
+	// Dec indicates a decrement, used for LDD, ie: HL vs HL-
+	Dec bool
+}
+
+// Registers
 type Register string
 
 const (
@@ -50,18 +62,3 @@ const (
 	// Carry
 	Ca Condition = "C"
 )
-
-// Used as a wrapper to indicate a dereference of a pointer
-type Deref interface{}
-
-// Used as a wrapper to indicate an increment, used for LD(i)
-type Inc interface{}
-
-// Used as a wrapper to indicate a decrement, used for LD(d)
-type Dec interface{}
-
-// Hexadecminal param, used for RST instructions
-type Hex byte
-
-// Bit param, used in shift, rotate and bit instructions (ie: CB-prefixed RLC,SET,RES or normal RLCA, RLA, etc)
-type Bit byte
