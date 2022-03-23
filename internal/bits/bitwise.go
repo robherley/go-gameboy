@@ -16,16 +16,16 @@ func To16(hi, lo byte) uint16 {
 }
 
 // Returns the Nth bit from a byte
-func GetNBit(num, n byte) bool {
-	return (num & (1 << n)) != 0
+func GetNBit(num, bit byte) bool {
+	return (num & (1 << bit)) != 0
 }
 
 // Sets the Nth bit in a byte and returns the new byte
-func SetNBit(num, n byte) byte {
-	return num | (1 << n)
+func SetNBit(num, bit byte) byte {
+	return num | (1 << bit)
 }
 
 // Clears the Nth bit in a byte and returns the new byte
-func ClearNBit(num, n byte) byte {
-	return num & ^(1 << n)
+func ClearNBit(num, bit byte) byte {
+	return num & ^(1 << bit)
 }
