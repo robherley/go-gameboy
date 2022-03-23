@@ -5,6 +5,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/robherley/go-dmg/pkg/cartridge"
+	"github.com/robherley/go-dmg/pkg/cpu"
 	"github.com/robherley/go-dmg/pkg/instructions"
 )
 
@@ -84,4 +85,30 @@ func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
 		}
 	}
 	pterm.FgGray.Printf(" (len=%d)\n", len(in.Operands))
+}
+
+func CPU(c *cpu.CPU) {
+	if Hide {
+		return
+	}
+
+	r8 := func(b byte) string {
+		return pterm.FgYellow.Sprintf("%02x", b)
+	}
+
+	r16 := func(w uint16) string {
+		return pterm.FgYellow.Sprintf("%04x", w)
+	}
+
+	flagStr := func(f cpu.Flag) string {
+		if c.GetFlag(f) {
+			return pterm.Green("1")
+		} else {
+			return pterm.Red("0")
+		}
+	}
+
+	pterm.FgDarkGray.Printf("  PC: %s · SP: %s\n", r16(c.PC), r16(c.SP))
+	pterm.FgDarkGray.Printf("  A: %s · F: %s · B: %s · C: %s · D: %s · E: %s · H: %s · L: %s\n", r8(c.A), r8(c.F), r8(c.B), r8(c.C), r8(c.D), r8(c.E), r8(c.H), r8(c.L))
+	pterm.FgDarkGray.Printf("  Z:  %s · N:  %s · H:  %s · C: %s\n", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
 }

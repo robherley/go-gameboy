@@ -7,17 +7,18 @@ import (
 
 type CPU struct {
 	*Registers
-	MMU *MMU
+	*MMU
+
+	// Int Master Enabled: enables/disables interrupts
+	IME bool
 }
 
+// https://gbdev.io/pandocs/Power_Up_Sequence.html
 func New(cart *cartridge.Cartridge) *CPU {
 	return &CPU{
-		MMU: &MMU{
-			Cartridge: cart,
-		},
-		Registers: &Registers{
-			PC: 0x100,
-		},
+		MMU:       &MMU{cart},
+		Registers: RegistersForDMG(cart),
+		IME:       true,
 	}
 }
 

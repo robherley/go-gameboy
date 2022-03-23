@@ -11,6 +11,16 @@ type Operand struct {
 	Dec bool
 }
 
+// Size returns the expected size (n=byte) for the operand
+func (o *Operand) Size() byte {
+	switch o.Symbol {
+	case AF, BC, DE, HL, PC, SP, D16, A16:
+		return 2
+	default:
+		return 1
+	}
+}
+
 // Registers
 type Register string
 

@@ -1,16 +1,19 @@
 package cpu
 
-import "github.com/robherley/go-dmg/internal/bits"
+import (
+	"github.com/robherley/go-dmg/internal/bits"
+	"github.com/robherley/go-dmg/pkg/cartridge"
+)
 
 // https://gbdev.io/pandocs/CPU_Registers_and_Flags.html#registers
 
 type Registers struct {
 	A byte
+	F byte
 	B byte
 	C byte
 	D byte
 	E byte
-	F byte
 	H byte
 	L byte
 
@@ -18,11 +21,37 @@ type Registers struct {
 	PC uint16
 }
 
+// https://gbdev.io/pandocs/Power_Up_Sequence.html#cpu-registers
+func RegistersForDMG(cart *cartridge.Cartridge) *Registers {
+	r := &Registers{
+		A:  0x01,
+		F:  0x00,
+		B:  0x00,
+		C:  0x13,
+		D:  0x00,
+		E:  0xD8,
+		H:  0x01,
+		L:  0x4D,
+		PC: 0x0100,
+		SP: 0xFFFE,
+	}
+
+	r.SetFlag(FlagZ)
+
+	// set carry and half carry if header checksum is != 0x00
+	if cart.CalculateHeaderCheckSum() != 0 {
+		r.SetFlag(FlagH)
+		r.SetFlag(FlagC)
+	}
+
+	return r
+}
+
 /*
-	Registers can be accessed as one 16bit register OR separate 8 bit
+	Registers can be accessed as one 16 bit register OR separate 8 bit
 
 	|16|Hi|Lo|
-	|AF|A |- |
+	|AF|A |F |
 	|BC|B |C |
 	|DE|D |E |
 	|HL|H |L |

@@ -20,6 +20,7 @@ func New(cart *cartridge.Cartridge) *Emulator {
 }
 
 func (e *Emulator) Boot() {
+	pretty.CPU(e.CPU)
 	e.Step()
 }
 
@@ -27,19 +28,19 @@ func (e *Emulator) Step() {
 	currentPC := e.CPU.PC
 
 	opcode := e.CPU.Fetch8()
-
 	in := instructions.FromOPCode(opcode, false)
 	if in == nil {
 		panic(fmt.Errorf("unknown instruction: 0x%x", opcode))
 	}
-
 	pretty.Instruction(currentPC, opcode, in)
 
 	ticks := e.CPU.Process(in)
+	pretty.CPU(e.CPU)
+
 	e.doTicks(ticks)
 	e.Step()
 }
 
 func (e *Emulator) doTicks(ticks byte) {
-	fmt.Println("\t🕓", ticks, "ticks")
+	fmt.Println("  🕓 TODO:", ticks, "ticks")
 }
