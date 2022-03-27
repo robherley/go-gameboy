@@ -118,18 +118,18 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 		panic(fmt.Errorf("LD: must have 2-3 operands, got: %d", numOps))
 	}
 
-	// special instruction for 0xF8
+	// special case instruction for 0xF8
 	if numOps == 3 {
 		r8 := Resolve(c, &in.Operands[2])
 
-		// half carry
-		setH := (c.SP&0x000F)+(r8&0x000F) > 0x000F
+		// half carry (4 bits)
+		setH := (c.SP&0xF)+(r8&0xF) > 0xF
 		if setH {
 			c.SetFlag(FlagH)
 		}
 
-		// carry
-		setC := (c.SP&0x00FF)+(r8&0x00FF) > 0x00FF
+		// carry (8 bits)
+		setC := (c.SP&0xFF)+(r8&0xFF) > 0xFF
 		if setC {
 			c.SetFlag(FlagC)
 		}
@@ -137,6 +137,10 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 		// reset other flags
 		c.ClearFlag(FlagZ)
 		c.ClearFlag(FlagN)
+
+		c.SetHL(c.SP + r8)
+
+		return 4
 	}
 
 	dst := &in.Operands[0]
@@ -145,7 +149,7 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 	srcData := Resolve(c, src)
 
 	if dst.IsData() || dst.Deref {
-		// if destination is data or dereference, we're writing to the address of the register
+		// if destination is data or dereference, we're writing to the address
 		addr := Resolve(c, dst)
 		if src.Is16() {
 			c.Write16(addr, srcData)
@@ -153,7 +157,7 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 			c.Write8(addr, byte(srcData))
 		}
 	} else if dst.IsRegister() {
-		// if register to register, just copy the value
+		// if register to register, just write to the register
 		SetRegister(c.Registers, dst.Symbol.(instructions.Register), srcData)
 	} else {
 		// unknown state
