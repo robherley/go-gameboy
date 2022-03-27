@@ -110,5 +110,5 @@ func CPU(c *cpu.CPU) {
 
 	pterm.FgDarkGray.Printf("  PC: %s · SP: %s\n", r16(c.PC), r16(c.SP))
 	pterm.FgDarkGray.Printf("  A: %s · F: %s · B: %s · C: %s · D: %s · E: %s · H: %s · L: %s\n", r8(c.A), r8(c.F), r8(c.B), r8(c.C), r8(c.D), r8(c.E), r8(c.H), r8(c.L))
-	pterm.FgDarkGray.Printf("  Z:  %s · N:  %s · H:  %s · C: %s\n", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
+	pterm.FgDarkGray.Printf("  Z: %s · N: %s · H: %s · C: %s\n", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
 }

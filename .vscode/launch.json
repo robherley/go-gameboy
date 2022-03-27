@@ -9,7 +9,24 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceRoot}"
+      "program": "${workspaceRoot}",
+      "args": [
+        "roms/${input:romFile}"
+      ],
     }
+  ],
+  "inputs": [
+    {
+      "type": "pickString",
+      "id": "romFile",
+      "description": "Which rom do you want to test?",
+      "options": [
+        "cpu_instrs.gb",
+        "dmg-acid2.gb",
+        "mem_timing.gb",
+        "tetris.gb"
+      ],
+      "default": "tetris.gb"
+    },
   ]
 }
