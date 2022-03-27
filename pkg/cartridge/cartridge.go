@@ -31,5 +31,5 @@ func (c *Cartridge) Read(address uint16) byte {
 }
 
 func (c *Cartridge) Write(address uint16, value byte) {
-	panic("not implemented")
+	panic(fmt.Errorf("WRITE 0x%x to 0x%04x not allowed", value, address))
 }

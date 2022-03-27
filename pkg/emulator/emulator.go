@@ -21,7 +21,10 @@ func New(cart *cartridge.Cartridge) *Emulator {
 
 func (e *Emulator) Boot() {
 	pretty.CPU(e.CPU)
-	e.Step()
+
+	for {
+		e.Step()
+	}
 }
 
 func (e *Emulator) Step() {
@@ -38,7 +41,6 @@ func (e *Emulator) Step() {
 	pretty.CPU(e.CPU)
 
 	e.doTicks(ticks)
-	e.Step()
 }
 
 func (e *Emulator) doTicks(ticks byte) {

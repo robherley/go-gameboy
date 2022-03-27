@@ -1,6 +1,8 @@
 package cpu
 
 import (
+	"fmt"
+
 	"github.com/robherley/go-dmg/internal/bits"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 )
@@ -15,31 +17,35 @@ type MMU struct {
 	Cartridge *cartridge.Cartridge
 }
 
-func (m *MMU) read8(address uint16) byte {
+func (m *MMU) Read8(address uint16) byte {
 	if address < ROM_END {
 		return m.Cartridge.Read(address)
 	}
 
-	panic("not implemented")
+	fmt.Printf("UNSUPPORTED read of 0x%X\n", address)
+	// panic("not implemented")
+
+	return 0
 }
 
-func (m *MMU) read16(address uint16) uint16 {
-	hi := m.read8(address)
-	lo := m.read8(address + 1)
+func (m *MMU) Read16(address uint16) uint16 {
+	lo := m.Read8(address)
+	hi := m.Read8(address + 1)
 
 	return bits.To16(hi, lo)
 }
 
-func (m *MMU) write8(address uint16, value byte) {
-	if address < ROM_END {
-		// some cartridges allow special ops for ROM write
-		m.Cartridge.Write(address, value)
-	}
+func (m *MMU) Write8(address uint16, value byte) {
+	// if address < ROM_END {
+	// 	// some cartridges allow special ops for ROM write
+	// 	m.Cartridge.Write(address, value)
+	// }
 
-	panic("not implemented")
+	fmt.Printf("UNSUPPORTED write of 0x%X\n", address)
+	// panic("not implemented")
 }
 
-func (m *MMU) write16(address uint16, value uint16) {
-	m.write8(address, bits.Hi(value))
-	m.write8(address+1, bits.Lo(value))
+func (m *MMU) Write16(address uint16, value uint16) {
+	m.Write8(address, bits.Lo(value))
+	m.Write8(address+1, bits.Hi(value))
 }

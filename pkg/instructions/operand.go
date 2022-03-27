@@ -21,6 +21,29 @@ func (o *Operand) Size() byte {
 	}
 }
 
+func (o *Operand) Is8() bool {
+	return o.Size() == 1
+}
+
+func (o *Operand) Is16() bool {
+	return o.Size() == 2
+}
+
+func (o *Operand) IsRegister() bool {
+	_, ok := o.Symbol.(Register)
+	return ok
+}
+
+func (o *Operand) IsData() bool {
+	_, ok := o.Symbol.(Data)
+	return ok
+}
+
+func (o *Operand) IsConditon() bool {
+	_, ok := o.Symbol.(Condition)
+	return ok
+}
+
 // Registers
 type Register string
 

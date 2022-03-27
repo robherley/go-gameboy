@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"github.com/robherley/go-dmg/internal/bits"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 )
 
@@ -27,12 +26,13 @@ func (c *CPU) Fetch8() byte {
 		c.PC++
 	}()
 
-	return c.MMU.read8(c.PC)
+	return c.Read8(c.PC)
 }
 
 func (c *CPU) Fetch16() uint16 {
-	lo := c.Fetch8()
-	hi := c.Fetch8()
+	defer func() {
+		c.PC += 2
+	}()
 
-	return bits.To16(hi, lo)
+	return c.Read16(c.PC)
 }
