@@ -186,6 +186,7 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 	return 4
 }
 
+// LDH: loads/sets A from 8-bit signed data
 func (c *CPU) LDH(in *instructions.Instruction) byte {
 	first := in.Operands[0].Symbol
 	second := in.Operands[1].Symbol
@@ -202,6 +203,28 @@ func (c *CPU) LDH(in *instructions.Instruction) byte {
 	} else {
 		panic(fmt.Errorf("LDH: must have LDH <A|a8> <A|a8>, got: %v %v", in.Operands[0].Symbol, in.Operands[1].Symbol))
 	}
+
+	return 4
+}
+
+// POP: pops a two byte value off the stack
+func (c *CPU) POP(in *instructions.Instruction) byte {
+	val := c.StackPop16()
+
+	// special case for AF, protect last nibble for flags
+	if in.Operands[0].Symbol == instructions.AF {
+		c.Registers.SetAF(val & 0xFFF0)
+	} else {
+		c.Registers.SetAF(val)
+	}
+
+	return 4
+}
+
+// PUSH: pushes a two byte value on the stacks
+func (c *CPU) PUSH(in *instructions.Instruction) byte {
+	val := c.ValueOf(&in.Operands[0])
+	c.StackPush16(val)
 
 	return 4
 }
