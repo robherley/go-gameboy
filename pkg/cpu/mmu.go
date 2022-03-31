@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/robherley/go-dmg/internal/bits"
-	"github.com/robherley/go-dmg/pkg/cartridge"
 )
 
 // https://gbdev.io/pandocs/Memory_Map.html
@@ -36,17 +35,13 @@ const (
 	IN_ENABLE_REG = 0xFFFF
 )
 
-type MMU struct {
-	Cartridge *cartridge.Cartridge
-}
-
-func (m *MMU) Read8(address uint16) byte {
+func (c *CPU) Read8(address uint16) byte {
 	if address <= ROM_END {
-		return m.Cartridge.Read(address)
+		return c.Cartridge.Read(address)
 	} else if address <= CHAR_MAP_END {
 		panic(fmt.Errorf("TODO read char map: 0x%04x", address))
 	} else if address <= CART_RAM_END {
-		return m.Cartridge.Read(address)
+		return c.Cartridge.Read(address)
 	} else if address <= WRAM_END {
 		panic(fmt.Errorf("TODO read wram: 0x%04x", address))
 	} else if address <= RES_ECHO_END {
@@ -66,21 +61,21 @@ func (m *MMU) Read8(address uint16) byte {
 	panic(fmt.Errorf("invalid out of bound memory read: 0x%04x", address))
 }
 
-func (m *MMU) Read16(address uint16) uint16 {
-	lo := m.Read8(address)
-	hi := m.Read8(address + 1)
+func (c *CPU) Read16(address uint16) uint16 {
+	lo := c.Read8(address)
+	hi := c.Read8(address + 1)
 
 	return bits.To16(hi, lo)
 }
 
-func (m *MMU) Write8(address uint16, value byte) {
+func (c *CPU) Write8(address uint16, value byte) {
 	if address <= ROM_END {
-		m.Cartridge.Write(address, value)
+		c.Cartridge.Write(address, value)
 		return
 	} else if address <= CHAR_MAP_END {
 		panic(fmt.Errorf("TODO write char map: 0x%04x", address))
 	} else if address <= CART_RAM_END {
-		m.Cartridge.Write(address, value)
+		c.Cartridge.Write(address, value)
 		return
 	} else if address <= WRAM_END {
 		panic(fmt.Errorf("TODO write wram: 0x%04x", address))
@@ -101,7 +96,7 @@ func (m *MMU) Write8(address uint16, value byte) {
 	panic(fmt.Errorf("invalid out of bound memory write: 0x%04x", address))
 }
 
-func (m *MMU) Write16(address uint16, value uint16) {
-	m.Write8(address, bits.Lo(value))
-	m.Write8(address+1, bits.Hi(value))
+func (c *CPU) Write16(address uint16, value uint16) {
+	c.Write8(address, bits.Lo(value))
+	c.Write8(address+1, bits.Hi(value))
 }
