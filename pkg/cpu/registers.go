@@ -50,7 +50,7 @@ func RegistersForDMG(cart *cartridge.Cartridge) *Registers {
 	return r
 }
 
-func SetRegister(registers *Registers, reg instructions.Register, value uint16) {
+func (registers *Registers) Set(reg instructions.Register, value uint16) {
 	switch reg {
 	case instructions.A:
 		registers.A = byte(value)
@@ -85,7 +85,7 @@ func SetRegister(registers *Registers, reg instructions.Register, value uint16) 
 	}
 }
 
-func GetRegister(registers *Registers, reg instructions.Register) uint16 {
+func (registers *Registers) Get(reg instructions.Register) uint16 {
 	switch reg {
 	case instructions.A:
 		return uint16(registers.A)

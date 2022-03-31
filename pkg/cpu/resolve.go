@@ -14,7 +14,7 @@ func Resolve(c *CPU, operand *instructions.Operand) uint16 {
 	case instructions.Data:
 		val = resolveData(c, &symbol)
 	case instructions.Register:
-		val = GetRegister(c.Registers, symbol)
+		val = c.Registers.Get(symbol)
 		if operand.Deref {
 			val = uint16(c.Read8(val))
 		}

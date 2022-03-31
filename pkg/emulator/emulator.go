@@ -19,30 +19,30 @@ func New(cart *cartridge.Cartridge) *Emulator {
 	}
 }
 
-func (e *Emulator) Boot() {
-	pretty.CPU(e.CPU)
+func (emu *Emulator) Boot() {
+	pretty.CPU(emu.CPU)
 
 	for {
-		e.Step()
+		emu.Step()
 	}
 }
 
-func (e *Emulator) Step() {
-	currentPC := e.CPU.PC
+func (emu *Emulator) Step() {
+	currentPC := emu.CPU.Registers.PC
 
-	opcode := e.CPU.Fetch8()
+	opcode := emu.CPU.Fetch8()
 	in := instructions.FromOPCode(opcode, false)
 	if in == nil {
 		panic(fmt.Errorf("unknown instruction: 0x%x", opcode))
 	}
 	pretty.Instruction(currentPC, opcode, in)
 
-	ticks := e.CPU.Process(in)
-	pretty.CPU(e.CPU)
+	ticks := emu.CPU.Process(in)
+	pretty.CPU(emu.CPU)
 
-	e.doTicks(ticks)
+	emu.doTicks(ticks)
 }
 
-func (e *Emulator) doTicks(ticks byte) {
+func (emu *Emulator) doTicks(ticks byte) {
 	fmt.Println("  🕓 TODO:", ticks, "ticks")
 }

@@ -41,8 +41,8 @@ func (c *CPU) INC(in *instructions.Instruction) byte {
 		panic(fmt.Errorf("INC: must have register, got %s", in.Operands[0].Symbol))
 	}
 
-	val := GetRegister(c.Registers, reg)
-	SetRegister(c.Registers, reg, val+1)
+	val := c.Registers.Get(reg)
+	c.Registers.Set(reg, val+1)
 
 	return 4
 }
@@ -54,8 +54,8 @@ func (c *CPU) DEC(in *instructions.Instruction) byte {
 		panic(fmt.Errorf("DEC: must have register, got %s", in.Operands[0].Symbol))
 	}
 
-	val := GetRegister(c.Registers, reg)
-	SetRegister(c.Registers, reg, val-1)
+	val := c.Registers.Get(reg)
+	c.Registers.Set(reg, val-1)
 
 	return 4
 }
@@ -68,13 +68,13 @@ func (c *CPU) JP(in *instructions.Instruction) byte {
 		if !ok {
 			panic(fmt.Errorf("JP: must have <condition> <operand> for > 1 operand, got: %v", in.Operands[0].Symbol))
 		}
-		if c.IsCondition(cond) {
+		if c.Registers.IsCondition(cond) {
 			// condition passed, so jump to resolved value
-			c.PC = Resolve(c, &in.Operands[1])
+			c.Registers.PC = Resolve(c, &in.Operands[1])
 		}
 	} else {
 		// doesn't have condition, resolve the value
-		c.PC = Resolve(c, &in.Operands[0])
+		c.Registers.PC = Resolve(c, &in.Operands[0])
 	}
 
 	return 4
@@ -95,17 +95,17 @@ func (c *CPU) EI(in *instructions.Instruction) byte {
 // XOR: logical exclusive OR with register A
 func (c *CPU) XOR(in *instructions.Instruction) byte {
 	value := Resolve(c, &in.Operands[0])
-	c.A ^= bits.Lo(value)
+	c.Registers.A ^= bits.Lo(value)
 
 	// set zero flag if result is zero
-	if c.A == 0 {
-		c.SetFlag(FlagZ)
+	if c.Registers.A == 0 {
+		c.Registers.SetFlag(FlagZ)
 	}
 
 	// reset other flags
-	c.ClearFlag(FlagN)
-	c.ClearFlag(FlagH)
-	c.ClearFlag(FlagC)
+	c.Registers.ClearFlag(FlagN)
+	c.Registers.ClearFlag(FlagH)
+	c.Registers.ClearFlag(FlagC)
 
 	return 4
 }
@@ -123,22 +123,22 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 		r8 := Resolve(c, &in.Operands[2])
 
 		// half carry (4 bits)
-		setH := (c.SP&0xF)+(r8&0xF) > 0xF
+		setH := (c.Registers.SP&0xF)+(r8&0xF) > 0xF
 		if setH {
-			c.SetFlag(FlagH)
+			c.Registers.SetFlag(FlagH)
 		}
 
 		// carry (8 bits)
-		setC := (c.SP&0xFF)+(r8&0xFF) > 0xFF
+		setC := (c.Registers.SP&0xFF)+(r8&0xFF) > 0xFF
 		if setC {
-			c.SetFlag(FlagC)
+			c.Registers.SetFlag(FlagC)
 		}
 
 		// reset other flags
-		c.ClearFlag(FlagZ)
-		c.ClearFlag(FlagN)
+		c.Registers.ClearFlag(FlagZ)
+		c.Registers.ClearFlag(FlagN)
 
-		c.SetHL(c.SP + r8)
+		c.Registers.SetHL(c.Registers.SP + r8)
 
 		return 4
 	}
@@ -158,7 +158,7 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 		}
 	} else if dst.IsRegister() {
 		// if register to register, just write to the register
-		SetRegister(c.Registers, dst.Symbol.(instructions.Register), srcData)
+		c.Registers.Set(dst.Symbol.(instructions.Register), srcData)
 	} else {
 		// unknown state
 		panic(fmt.Errorf("LD: invalid symbol type, got: %T", dst.Symbol))
@@ -170,14 +170,14 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 			continue
 		}
 
-		hl := GetRegister(c.Registers, instructions.HL)
+		hl := c.Registers.Get(instructions.HL)
 
 		if in.Operands[i].Inc {
-			SetRegister(c.Registers, instructions.HL, hl+1)
+			c.Registers.Set(instructions.HL, hl+1)
 		}
 
 		if in.Operands[i].Dec {
-			SetRegister(c.Registers, instructions.HL, hl-1)
+			c.Registers.Set(instructions.HL, hl-1)
 		}
 	}
 
