@@ -55,7 +55,7 @@ func (c *CPU) Read8(address uint16) byte {
 	} else if address <= HRAM_END {
 		panic(fmt.Errorf("TODO read hram: 0x%04x", address))
 	} else if address == IN_ENABLE_REG {
-		panic(fmt.Errorf("TODO read interrupt reg: 0x%04x", address))
+		return c.IE
 	}
 
 	panic(fmt.Errorf("invalid out of bound memory read: 0x%04x", address))
@@ -78,7 +78,8 @@ func (c *CPU) Write8(address uint16, value byte) {
 		c.Cartridge.Write(address, value)
 		return
 	} else if address <= WRAM_END {
-		panic(fmt.Errorf("TODO write wram: 0x%04x", address))
+		fmt.Println(fmt.Errorf("TODO write wram: 0x%04x", address))
+		return
 	} else if address <= RES_ECHO_END {
 		panic(fmt.Errorf("invalid write of reserved echo memory: 0x%04x", address))
 	} else if address <= OAM_END {
@@ -86,11 +87,14 @@ func (c *CPU) Write8(address uint16, value byte) {
 	} else if address <= RES_UNUSE_END {
 		panic(fmt.Errorf("invalid write of reserved unused memory: 0x%04x", address))
 	} else if address <= IO_REG_END {
-		panic(fmt.Errorf("TODO write io reg: 0x%04x", address))
+		fmt.Println(fmt.Errorf("TODO write io reg: 0x%04x", address))
+		return
 	} else if address <= HRAM_END {
-		panic(fmt.Errorf("TODO write hram: 0x%04x", address))
+		fmt.Println(fmt.Errorf("TODO write hram: 0x%04x", address))
+		return
 	} else if address == IN_ENABLE_REG {
-		panic(fmt.Errorf("TODO write interrupt reg: 0x%04x", address))
+		c.IE = value
+		return
 	}
 
 	panic(fmt.Errorf("invalid out of bound memory write: 0x%04x", address))

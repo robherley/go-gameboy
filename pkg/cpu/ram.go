@@ -5,6 +5,10 @@ import "fmt"
 const (
 	WRAM_SIZE = 0x2000
 	HRAM_SIZE = 0x80
+
+	// offsets of where the memory region starts (see mmu.go)
+	WRAM_OFFSET = 0xC000
+	HRAM_OFFSET = 0xFF80
 )
 
 type RAM struct {
@@ -12,9 +16,8 @@ type RAM struct {
 	hram [HRAM_SIZE]byte
 }
 
-func (r *RAM) translateAddress(address uint16) uint16 {
-	// subtracting where it starts in mmap context (see mmu.go)
-	internalAddress := address - 0xC000
+func (r *RAM) translateAddress(address, offset uint16) uint16 {
+	internalAddress := address - offset
 	if internalAddress >= WRAM_SIZE {
 		panic(fmt.Errorf("invalid wram access at %04x", address))
 	}
@@ -22,10 +25,18 @@ func (r *RAM) translateAddress(address uint16) uint16 {
 	return internalAddress
 }
 
-func (r *RAM) Read8(address uint16) byte {
-	return r.wram[r.translateAddress(address)]
+func (r *RAM) WRAMRead(address uint16) byte {
+	return r.wram[r.translateAddress(address, WRAM_OFFSET)]
 }
 
-func (r *RAM) Write8(address uint16, value byte) {
-	r.wram[r.translateAddress(address)] = value
+func (r *RAM) WRAMWrite(address uint16, value byte) {
+	r.wram[r.translateAddress(address, WRAM_OFFSET)] = value
+}
+
+func (r *RAM) HRAMRead(address uint16) byte {
+	return r.hram[r.translateAddress(address, HRAM_OFFSET)]
+}
+
+func (r *RAM) HRAMWrite(address uint16, value byte) {
+	r.hram[r.translateAddress(address, HRAM_OFFSET)] = value
 }

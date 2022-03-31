@@ -24,6 +24,8 @@ func (c *CPU) Process(in *instructions.Instruction) byte {
 		return c.XOR(in)
 	case instructions.LD:
 		return c.LD(in)
+	case instructions.LDH:
+		return c.LDH(in)
 	default:
 		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
 	}
@@ -70,11 +72,11 @@ func (c *CPU) JP(in *instructions.Instruction) byte {
 		}
 		if c.Registers.IsCondition(cond) {
 			// condition passed, so jump to resolved value
-			c.Registers.PC = Resolve(c, &in.Operands[1])
+			c.Registers.PC = c.ValueOf(&in.Operands[1])
 		}
 	} else {
 		// doesn't have condition, resolve the value
-		c.Registers.PC = Resolve(c, &in.Operands[0])
+		c.Registers.PC = c.ValueOf(&in.Operands[0])
 	}
 
 	return 4
@@ -94,7 +96,7 @@ func (c *CPU) EI(in *instructions.Instruction) byte {
 
 // XOR: logical exclusive OR with register A
 func (c *CPU) XOR(in *instructions.Instruction) byte {
-	value := Resolve(c, &in.Operands[0])
+	value := c.ValueOf(&in.Operands[0])
 	c.Registers.A ^= bits.Lo(value)
 
 	// set zero flag if result is zero
@@ -120,7 +122,7 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 
 	// special case instruction for 0xF8
 	if numOps == 3 {
-		r8 := Resolve(c, &in.Operands[2])
+		r8 := c.ValueOf(&in.Operands[2])
 
 		// half carry (4 bits)
 		setH := (c.Registers.SP&0xF)+(r8&0xF) > 0xF
@@ -146,11 +148,11 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 	dst := &in.Operands[0]
 	src := &in.Operands[1]
 
-	srcData := Resolve(c, src)
+	srcData := c.ValueOf(src)
 
 	if dst.IsData() || dst.Deref {
 		// if destination is data or dereference, we're writing to the address
-		addr := Resolve(c, dst)
+		addr := c.ValueOf(dst)
 		if src.Is16() {
 			c.Write16(addr, srcData)
 		} else {
@@ -179,6 +181,26 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 		if in.Operands[i].Dec {
 			c.Registers.Set(instructions.HL, hl-1)
 		}
+	}
+
+	return 4
+}
+
+func (c *CPU) LDH(in *instructions.Instruction) byte {
+	first := in.Operands[0].Symbol
+	second := in.Operands[1].Symbol
+
+	if first == instructions.A && second == instructions.A8 {
+		// LDH A (a8), alternate mnemonic is LD A,($FF00+a8)
+		a8 := c.ValueOf(&in.Operands[1])
+		c.Registers.A = c.Read8(0xFF00 | a8)
+
+	} else if first == instructions.A8 && second == instructions.A {
+		// LDH (a8) A, alternate mnemonic is LD ($FF00+a8),A
+		a8 := c.ValueOf(&in.Operands[0])
+		c.Write8(0xFF00|a8, c.Registers.A)
+	} else {
+		panic(fmt.Errorf("LDH: must have LDH <A|a8> <A|a8>, got: %v %v", in.Operands[0].Symbol, in.Operands[1].Symbol))
 	}
 
 	return 4
