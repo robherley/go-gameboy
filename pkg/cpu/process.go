@@ -38,10 +38,7 @@ func (c *CPU) NOP(in *instructions.Instruction) byte {
 
 // INC: increment register
 func (c *CPU) INC(in *instructions.Instruction) byte {
-	reg, ok := in.Operands[0].Symbol.(instructions.Register)
-	if !ok {
-		panic(fmt.Errorf("INC: must have register, got %s", in.Operands[0].Symbol))
-	}
+	reg, _ := in.Operands[0].Symbol.(instructions.Register)
 
 	val := c.Registers.Get(reg)
 	c.Registers.Set(reg, val+1)
@@ -51,10 +48,7 @@ func (c *CPU) INC(in *instructions.Instruction) byte {
 
 // DEC: decrement register
 func (c *CPU) DEC(in *instructions.Instruction) byte {
-	reg, ok := in.Operands[0].Symbol.(instructions.Register)
-	if !ok {
-		panic(fmt.Errorf("DEC: must have register, got %s", in.Operands[0].Symbol))
-	}
+	reg, _ := in.Operands[0].Symbol.(instructions.Register)
 
 	val := c.Registers.Get(reg)
 	c.Registers.Set(reg, val-1)
@@ -66,11 +60,8 @@ func (c *CPU) DEC(in *instructions.Instruction) byte {
 func (c *CPU) JP(in *instructions.Instruction) byte {
 	// check if conditional jump
 	if len(in.Operands) > 1 {
-		cond, ok := in.Operands[0].Symbol.(instructions.Condition)
-		if !ok {
-			panic(fmt.Errorf("JP: must have <condition> <operand> for > 1 operand, got: %v", in.Operands[0].Symbol))
-		}
-		if c.Registers.IsCondition(cond) {
+		condition, _ := in.Operands[0].Symbol.(instructions.Condition)
+		if c.Registers.IsCondition(condition) {
 			// condition passed, so jump to resolved value
 			c.Registers.PC = c.ValueOf(&in.Operands[1])
 		}
@@ -116,10 +107,6 @@ func (c *CPU) XOR(in *instructions.Instruction) byte {
 func (c *CPU) LD(in *instructions.Instruction) byte {
 	numOps := len(in.Operands)
 
-	if (numOps != 2) && (numOps != 3) {
-		panic(fmt.Errorf("LD: must have 2-3 operands, got: %d", numOps))
-	}
-
 	// special case instruction for 0xF8
 	if numOps == 3 {
 		r8 := c.ValueOf(&in.Operands[2])
@@ -161,9 +148,6 @@ func (c *CPU) LD(in *instructions.Instruction) byte {
 	} else if dst.IsRegister() {
 		// if register to register, just write to the register
 		c.Registers.Set(dst.Symbol.(instructions.Register), srcData)
-	} else {
-		// unknown state
-		panic(fmt.Errorf("LD: invalid symbol type, got: %T", dst.Symbol))
 	}
 
 	// check if any HL+ or HL-, and adjust
@@ -200,8 +184,6 @@ func (c *CPU) LDH(in *instructions.Instruction) byte {
 		// LDH (a8) A, alternate mnemonic is LD ($FF00+a8),A
 		a8 := c.ValueOf(&in.Operands[0])
 		c.Write8(0xFF00|a8, c.Registers.A)
-	} else {
-		panic(fmt.Errorf("LDH: must have LDH <A|a8> <A|a8>, got: %v %v", in.Operands[0].Symbol, in.Operands[1].Symbol))
 	}
 
 	return 4
