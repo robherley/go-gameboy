@@ -22,6 +22,8 @@ func (c *CPU) Process(in *instructions.Instruction) byte {
 		return c.JR(ops)
 	case instructions.CALL:
 		return c.CALL(ops)
+	case instructions.RST:
+		return c.CALL(ops)
 	case instructions.RET:
 		return c.RET(ops)
 	case instructions.RETI:
@@ -41,30 +43,34 @@ func (c *CPU) Process(in *instructions.Instruction) byte {
 	}
 }
 
-// jumper is a helper method for jump operations (JP, JR, CALL, etc)
-func (c *CPU) jumper(ops []instructions.Operand, relative, pushPC bool) byte {
+// jumper: helper method for jump operations (JP, JR, CALL, RST, etc)
+func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) byte {
 	var addr uint16
 
-	// check if conditional jump
+	// check if has conditional
 	if len(ops) > 1 {
 		condition, _ := ops[0].Symbol.(instructions.Condition)
 		if !c.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
 			return 4
 		}
-		addr = c.ValueOf(&ops[1])
-	} else {
-		// doesn't have condition, resolve the value
-		addr = c.ValueOf(&ops[0])
 	}
 
-	// push program counter, used for CALL
-	if pushPC {
+	if mnemonic == instructions.RET || mnemonic == instructions.RETI {
+		// RET gets jump value from stack
+		addr = c.StackPop16()
+	} else {
+		// otherwise get jump value from last operand
+		addr = c.ValueOf(&ops[len(ops)-1])
+	}
+
+	// push program counter, used for CALL & RST
+	if mnemonic == instructions.CALL || mnemonic == instructions.RST {
 		c.StackPush16(c.Registers.PC)
 	}
 
 	// cast and add signed data for relative jump, used for JR
-	if relative {
+	if mnemonic == instructions.JR {
 		rel := int8(addr & 0xFF)
 		addr = c.Registers.PC + uint16(rel)
 	}
@@ -101,54 +107,34 @@ func (c *CPU) DEC(ops []instructions.Operand) byte {
 
 // JP: jump to address (and check condition)
 func (c *CPU) JP(ops []instructions.Operand) byte {
-	// call jumper helper
-	// not relative
-	// don't push PC to stack
-	return c.jumper(ops, false, false)
+	return c.jumper(instructions.JP, ops)
 }
 
 // JR: jump to relative address (and check condition)
 func (c *CPU) JR(ops []instructions.Operand) byte {
-	// call jumper helper
-	// relative
-	// don't push PC to stack
-	return c.jumper(ops, true, false)
+	return c.jumper(instructions.JR, ops)
 }
 
 // CALL: push address of next instruction onto stack (and check condition)
 func (c *CPU) CALL(ops []instructions.Operand) byte {
-	// call jumper helper
-	// not relative
-	// push PC to stack
-	return c.jumper(ops, false, true)
+	return c.jumper(instructions.CALL, ops)
+}
+
+// RST: push address on to stack, jump to n
+func (c *CPU) RST(ops []instructions.Operand) byte {
+	return c.jumper(instructions.RST, ops)
 }
 
 // RET: pop two bytes from stack & jump to that address (and check condition)
 func (c *CPU) RET(ops []instructions.Operand) byte {
-	addr := c.StackPop16()
-
-	if len(ops) > 0 {
-		condition, _ := ops[0].Symbol.(instructions.Condition)
-		if !c.Registers.IsCondition(condition) {
-			// condition did not pass, so just return
-			return 4
-		}
-	}
-
-	c.Registers.PC = addr
-
-	return 4
+	return c.jumper(instructions.RET, ops)
 }
 
 // RETI: pop two bytes from stack & jump to that address then enable interrupts
 func (c *CPU) RETI(ops []instructions.Operand) byte {
-	// just a RET
-	c.RET(ops)
-
-	// and re-enable interrupts
+	v := c.jumper(instructions.RETI, ops)
 	c.IME = true
-
-	return 4
+	return v
 }
 
 // DI: disables interrupts
