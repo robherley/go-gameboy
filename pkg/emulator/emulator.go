@@ -37,10 +37,13 @@ func (emu *Emulator) Step() {
 	}
 	pretty.Instruction(currentPC, opcode, in)
 
-	ticks := emu.CPU.Process(in)
+	err := emu.CPU.Process(in)
+	if err != nil {
+		panic(err)
+	}
 	pretty.CPU(emu.CPU)
 
-	emu.doTicks(ticks)
+	// emu.doTicks(ticks)
 }
 
 func (emu *Emulator) doTicks(ticks byte) {

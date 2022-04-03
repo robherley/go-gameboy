@@ -84,7 +84,7 @@ func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
 			}
 		}
 	}
-	pterm.FgGray.Printf(" (len=%d)\n", len(in.Operands))
+	pterm.FgGray.Printf(" (args=%d)\n", len(in.Operands))
 }
 
 func CPU(c *cpu.CPU) {

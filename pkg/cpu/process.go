@@ -10,7 +10,7 @@ import (
 // https://gbdev.io/pandocs/CPU_Instruction_Set.html
 
 // Process an instruction for a given mnemonic, returns number of ticks
-func (c *CPU) Process(in *instructions.Instruction) byte {
+func (c *CPU) Process(in *instructions.Instruction) error {
 	ops := in.Operands
 
 	switch in.Mnemonic {
@@ -44,7 +44,7 @@ func (c *CPU) Process(in *instructions.Instruction) byte {
 }
 
 // jumper: helper method for jump operations (JP, JR, CALL, RST, etc)
-func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) byte {
+func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) error {
 	var addr uint16
 
 	// check if has conditional
@@ -52,7 +52,7 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 		condition, _ := ops[0].Symbol.(instructions.Condition)
 		if !c.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
-			return 4
+			return nil
 		}
 	}
 
@@ -77,80 +77,80 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 
 	c.Registers.PC = addr
 
-	return 4
+	return nil
 }
 
 // NOP: No operation
-func (c *CPU) NOP(ops []instructions.Operand) byte {
-	return 4
+func (c *CPU) NOP(ops []instructions.Operand) error {
+	return nil
 }
 
 // INC: increment register
-func (c *CPU) INC(ops []instructions.Operand) byte {
+func (c *CPU) INC(ops []instructions.Operand) error {
 	reg, _ := ops[0].Symbol.(instructions.Register)
 
 	val := c.Registers.Get(reg)
 	c.Registers.Set(reg, val+1)
 
-	return 4
+	return nil
 }
 
 // DEC: decrement register
-func (c *CPU) DEC(ops []instructions.Operand) byte {
+func (c *CPU) DEC(ops []instructions.Operand) error {
 	reg, _ := ops[0].Symbol.(instructions.Register)
 
 	val := c.Registers.Get(reg)
 	c.Registers.Set(reg, val-1)
 
-	return 4
+	return nil
 }
 
 // JP: jump to address (and check condition)
-func (c *CPU) JP(ops []instructions.Operand) byte {
+func (c *CPU) JP(ops []instructions.Operand) error {
 	return c.jumper(instructions.JP, ops)
 }
 
 // JR: jump to relative address (and check condition)
-func (c *CPU) JR(ops []instructions.Operand) byte {
+func (c *CPU) JR(ops []instructions.Operand) error {
 	return c.jumper(instructions.JR, ops)
 }
 
 // CALL: push address of next instruction onto stack (and check condition)
-func (c *CPU) CALL(ops []instructions.Operand) byte {
+func (c *CPU) CALL(ops []instructions.Operand) error {
 	return c.jumper(instructions.CALL, ops)
 }
 
 // RST: push address on to stack, jump to n
-func (c *CPU) RST(ops []instructions.Operand) byte {
+func (c *CPU) RST(ops []instructions.Operand) error {
 	return c.jumper(instructions.RST, ops)
 }
 
 // RET: pop two bytes from stack & jump to that address (and check condition)
-func (c *CPU) RET(ops []instructions.Operand) byte {
+func (c *CPU) RET(ops []instructions.Operand) error {
 	return c.jumper(instructions.RET, ops)
 }
 
 // RETI: pop two bytes from stack & jump to that address then enable interrupts
-func (c *CPU) RETI(ops []instructions.Operand) byte {
+func (c *CPU) RETI(ops []instructions.Operand) error {
 	v := c.jumper(instructions.RETI, ops)
 	c.IME = true
 	return v
 }
 
 // DI: disables interrupts
-func (c *CPU) DI(ops []instructions.Operand) byte {
+func (c *CPU) DI(ops []instructions.Operand) error {
 	c.IME = false
-	return 4
+	return nil
 }
 
 // EI: enables interrupts
-func (c *CPU) EI(ops []instructions.Operand) byte {
+func (c *CPU) EI(ops []instructions.Operand) error {
 	c.IME = true
-	return 4
+	return nil
 }
 
 // XOR: logical exclusive OR with register A
-func (c *CPU) XOR(ops []instructions.Operand) byte {
+func (c *CPU) XOR(ops []instructions.Operand) error {
 	value := c.ValueOf(&ops[0])
 	c.Registers.A ^= bits.Lo(value)
 
@@ -164,11 +164,11 @@ func (c *CPU) XOR(ops []instructions.Operand) byte {
 	c.Registers.ClearFlag(FlagH)
 	c.Registers.ClearFlag(FlagC)
 
-	return 4
+	return nil
 }
 
 // LD: puts values from one operand into another
-func (c *CPU) LD(ops []instructions.Operand) byte {
+func (c *CPU) LD(ops []instructions.Operand) error {
 	numOps := len(ops)
 
 	// special case instruction for 0xF8
@@ -193,7 +193,7 @@ func (c *CPU) LD(ops []instructions.Operand) byte {
 
 		c.Registers.SetHL(c.Registers.SP + r8)
 
-		return 4
+		return nil
 	}
 
 	dst := &ops[0]
@@ -231,11 +231,11 @@ func (c *CPU) LD(ops []instructions.Operand) byte {
 		}
 	}
 
-	return 4
+	return nil
 }
 
 // LDH: loads/sets A from 8-bit signed data
-func (c *CPU) LDH(ops []instructions.Operand) byte {
+func (c *CPU) LDH(ops []instructions.Operand) error {
 	first := ops[0].Symbol
 	second := ops[1].Symbol
 
@@ -250,11 +250,11 @@ func (c *CPU) LDH(ops []instructions.Operand) byte {
 		c.Write8(0xFF00|a8, c.Registers.A)
 	}
 
-	return 4
+	return nil
 }
 
 // POP: pops a two byte value off the stack
-func (c *CPU) POP(ops []instructions.Operand) byte {
+func (c *CPU) POP(ops []instructions.Operand) error {
 	val := c.StackPop16()
 
 	// special case for AF, protect last nibble for flags
@@ -265,13 +265,13 @@ func (c *CPU) POP(ops []instructions.Operand) byte {
 		c.Registers.Set(reg, val)
 	}
 
-	return 4
+	return nil
 }
 
 // PUSH: pushes a two byte value on the stacks
-func (c *CPU) PUSH(ops []instructions.Operand) byte {
+func (c *CPU) PUSH(ops []instructions.Operand) error {
 	val := c.ValueOf(&ops[0])
 	c.StackPush16(val)
 
-	return 4
+	return nil
 }
