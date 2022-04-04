@@ -11,36 +11,42 @@ import (
 
 // Process an instruction for a given mnemonic, returns number of ticks
 func (c *CPU) Process(in *instructions.Instruction) error {
-	ops := in.Operands
+	var proc func([]instructions.Operand) error
 
 	switch in.Mnemonic {
 	case instructions.NOP:
-		return c.NOP(ops)
+		proc = c.NOP
 	case instructions.JP:
-		return c.JP(ops)
+		proc = c.JP
 	case instructions.JR:
-		return c.JR(ops)
+		proc = c.JR
 	case instructions.CALL:
-		return c.CALL(ops)
+		proc = c.CALL
 	case instructions.RST:
-		return c.CALL(ops)
+		proc = c.CALL
 	case instructions.RET:
-		return c.RET(ops)
+		proc = c.RET
 	case instructions.RETI:
-		return c.RETI(ops)
+		proc = c.RETI
 	case instructions.DI:
-		return c.DI(ops)
+		proc = c.DI
 	case instructions.EI:
-		return c.EI(ops)
+		proc = c.EI
 	case instructions.XOR:
-		return c.XOR(ops)
+		proc = c.XOR
 	case instructions.LD:
-		return c.LD(ops)
+		proc = c.LD
 	case instructions.LDH:
-		return c.LDH(ops)
+		proc = c.LDH
+	case instructions.INC:
+		proc = c.INC
+	case instructions.DEC:
+		proc = c.DEC
 	default:
 		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
 	}
+
+	return proc(in.Operands)
 }
 
 // jumper: helper method for jump operations (JP, JR, CALL, RST, etc)
@@ -87,20 +93,56 @@ func (c *CPU) NOP(ops []instructions.Operand) error {
 
 // INC: increment register
 func (c *CPU) INC(ops []instructions.Operand) error {
-	reg, _ := ops[0].Symbol.(instructions.Register)
+	var result uint16
 
-	val := c.Registers.Get(reg)
-	c.Registers.Set(reg, val+1)
+	if ops[0].Deref {
+		// special case for instruction 0x34
+		addr := c.ValueOf(&ops[0])
+		result = uint16(c.Read8(addr)) + 1
+		c.Write8(addr, byte(result))
+	} else {
+		reg, _ := ops[0].Symbol.(instructions.Register)
+		result = c.Registers.Get(reg) + 1
+		c.Registers.Set(reg, result)
+	}
+
+	if ops[0].Is16() && !ops[0].Deref {
+		// if the parametes is 16 bit (and not a dereference)
+		// then no flags get set (see instructions 0x03, 0x13, etc)
+		return nil
+	}
+
+	c.Registers.SetFlag(FlagZ, result == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, (result&0xF) == 0)
 
 	return nil
 }
 
 // DEC: decrement register
 func (c *CPU) DEC(ops []instructions.Operand) error {
-	reg, _ := ops[0].Symbol.(instructions.Register)
+	var result uint16
 
-	val := c.Registers.Get(reg)
-	c.Registers.Set(reg, val-1)
+	if ops[0].Deref {
+		// special case for instruction 0x35
+		addr := c.ValueOf(&ops[0])
+		result = uint16(c.Read8(addr)) - 1
+		c.Write8(addr, byte(result))
+	} else {
+		reg, _ := ops[0].Symbol.(instructions.Register)
+		result = c.Registers.Get(reg) - 1
+		c.Registers.Set(reg, result)
+	}
+
+	if ops[0].Is16() && !ops[0].Deref {
+		// if the parametes is 16 bit (and not a dereference)
+		// then no flags get set (see instructions 0x0B, 0x1B, etc)
+		return nil
+	}
+
+	c.Registers.SetFlag(FlagZ, result == 0)
+	c.Registers.SetFlag(FlagN, true)
+	c.Registers.SetFlag(FlagH, (result&0xF) == 0xF)
 
 	return nil
 }
@@ -156,13 +198,13 @@ func (c *CPU) XOR(ops []instructions.Operand) error {
 
 	// set zero flag if result is zero
 	if c.Registers.A == 0 {
-		c.Registers.SetFlag(FlagZ)
+		c.Registers.SetFlag(FlagZ, true)
 	}
 
 	// reset other flags
-	c.Registers.ClearFlag(FlagN)
-	c.Registers.ClearFlag(FlagH)
-	c.Registers.ClearFlag(FlagC)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, false)
 
 	return nil
 }
@@ -178,18 +220,18 @@ func (c *CPU) LD(ops []instructions.Operand) error {
 		// half carry (4 bits)
 		setH := (c.Registers.SP&0xF)+(r8&0xF) > 0xF
 		if setH {
-			c.Registers.SetFlag(FlagH)
+			c.Registers.SetFlag(FlagH, true)
 		}
 
 		// carry (8 bits)
 		setC := (c.Registers.SP&0xFF)+(r8&0xFF) > 0xFF
 		if setC {
-			c.Registers.SetFlag(FlagC)
+			c.Registers.SetFlag(FlagC, true)
 		}
 
 		// reset other flags
-		c.Registers.ClearFlag(FlagZ)
-		c.Registers.ClearFlag(FlagN)
+		c.Registers.SetFlag(FlagZ, false)
+		c.Registers.SetFlag(FlagN, false)
 
 		c.Registers.SetHL(c.Registers.SP + r8)
 

@@ -209,10 +209,10 @@ func (r *Registers) GetFlag(f Flag) bool {
 	return bits.GetNBit(r.F, f)
 }
 
-func (r *Registers) SetFlag(f Flag) {
-	r.F = bits.SetNBit(r.F, f)
-}
-
-func (r *Registers) ClearFlag(f Flag) {
-	r.F = bits.ClearNBit(r.F, f)
+func (r *Registers) SetFlag(f Flag, set bool) {
+	if set {
+		r.F = bits.SetNBit(r.F, f)
+	} else {
+		r.F = bits.ClearNBit(r.F, f)
+	}
 }

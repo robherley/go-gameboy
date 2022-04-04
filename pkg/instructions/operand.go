@@ -38,12 +38,12 @@ func (o *Operand) IsRegister() bool {
 	return ok
 }
 
-func (o *Operand) AsRegister() (*Register, error) {
+func (o *Operand) AsRegister() (Register, error) {
 	val, ok := o.Symbol.(Register)
 	if !ok {
-		return nil, errors.NewOperandSymbolError(o.Symbol, Register(""))
+		return Register(""), errors.NewOperandSymbolError(o.Symbol, Register(""))
 	}
-	return &val, nil
+	return val, nil
 }
 
 func (o *Operand) IsData() bool {
@@ -51,12 +51,12 @@ func (o *Operand) IsData() bool {
 	return ok
 }
 
-func (o *Operand) AsData() (*Data, error) {
+func (o *Operand) AsData() (Data, error) {
 	val, ok := o.Symbol.(Data)
 	if !ok {
-		return nil, errors.NewOperandSymbolError(o.Symbol, Data(""))
+		return Data(""), errors.NewOperandSymbolError(o.Symbol, Data(""))
 	}
-	return &val, nil
+	return val, nil
 }
 
 func (o *Operand) IsConditon() bool {
@@ -64,12 +64,12 @@ func (o *Operand) IsConditon() bool {
 	return ok
 }
 
-func (o *Operand) AsCondition() (*Condition, error) {
+func (o *Operand) AsCondition() (Condition, error) {
 	val, ok := o.Symbol.(Condition)
 	if !ok {
-		return nil, errors.NewOperandSymbolError(o.Symbol, Condition(""))
+		return Condition(""), errors.NewOperandSymbolError(o.Symbol, Condition(""))
 	}
-	return &val, nil
+	return val, nil
 }
 
 // Registers
