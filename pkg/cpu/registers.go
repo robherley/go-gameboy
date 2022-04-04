@@ -39,12 +39,12 @@ func RegistersForDMG(cart *cartridge.Cartridge) *Registers {
 		SP: 0xFFFE,
 	}
 
-	r.SetFlag(FlagZ)
+	r.SetFlag(FlagZ, true)
 
 	// set carry and half carry if header checksum is != 0x00
 	if cart.CalculateHeaderCheckSum() != 0 {
-		r.SetFlag(FlagH)
-		r.SetFlag(FlagC)
+		r.SetFlag(FlagH, true)
+		r.SetFlag(FlagC, true)
 	}
 
 	return r
