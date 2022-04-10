@@ -43,7 +43,7 @@ func (emu *Emulator) Step() {
 	}
 	pretty.Instruction(currentPC, opcode, instruction, isCBPrexied)
 
-	emu.CPU.Do(instruction)
+	emu.CPU.Process(instruction)
 	pretty.CPU(emu.CPU)
 
 	// emu.doTicks(ticks)

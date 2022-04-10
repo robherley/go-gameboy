@@ -9,8 +9,8 @@ import (
 
 // https://gbdev.io/pandocs/CPU_Instruction_Set.html
 
-// Process an instruction for a given mnemonic, returns number of ticks
-func (c *CPU) Do(in *instructions.Instruction) {
+// Process an instruction for a given mnemonic
+func (c *CPU) Process(in *instructions.Instruction) {
 	var proc func([]instructions.Operand)
 
 	switch in.Mnemonic {
