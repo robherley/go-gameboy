@@ -3,7 +3,6 @@ package cartridge
 // https://gbdev.io/pandocs/The_Cartridge_Header.html#0147---cartridge-type
 type CartridgeType byte
 
-//go:generate stringer -type=CartridgeType
 const (
 	ROM_ONLY                       CartridgeType = 0x00
 	MBC1                           CartridgeType = 0x01
