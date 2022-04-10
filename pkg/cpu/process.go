@@ -60,6 +60,14 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		proc = c.XOR
 	case instructions.CP:
 		proc = c.CP
+	case instructions.RLCA:
+		proc = c.RLCA
+	case instructions.RRCA:
+		proc = c.RRCA
+	case instructions.RLA:
+		proc = c.RLA
+	case instructions.RRA:
+		proc = c.RRA
 	case instructions.BIT:
 		proc = c.BIT
 	case instructions.RES:
@@ -155,7 +163,7 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 	return nil
 }
 
-// setRotateShiftFlags: helper to set flags for 0xCB rotate/shift func
+// setRotateShiftFlags: helper to set flags for rotate/shift funcs
 func (c *CPU) setRotateShiftFlags(newVal byte, isCarry bool) {
 	c.Registers.SetFlag(FlagZ, newVal == 0)
 	c.Registers.SetFlag(FlagN, false)
@@ -503,6 +511,72 @@ func (c *CPU) CP(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
+
+	return nil
+}
+
+// RLCA: rotate A left. Old bit 7 to carry flag
+func (c *CPU) RLCA(ops []instructions.Operand) error {
+	val := c.Registers.A
+
+	isCarry := bits.GetNBit(val, 7)
+	newVal := val << 1
+	if isCarry {
+		newVal |= 1
+	}
+
+	c.Registers.A = newVal
+	c.setRotateShiftFlags(newVal, isCarry)
+
+	return nil
+}
+
+// RLCA: rotate A right. Old bit 0 to carry flag
+func (c *CPU) RRCA(ops []instructions.Operand) error {
+	val := c.Registers.A
+
+	isCarry := bits.GetNBit(val, 0)
+	newVal := val >> 1
+	if isCarry {
+		newVal |= (1 << 7)
+	}
+
+	c.Registers.A = newVal
+	c.setRotateShiftFlags(newVal, isCarry)
+
+	return nil
+}
+
+// RLA: rotate A left through carry flag
+func (c *CPU) RLA(ops []instructions.Operand) error {
+	val := c.Registers.A
+
+	isCarry := bits.GetNBit(val, 7)
+	isCarryFlagSet := c.Registers.GetFlag(FlagC)
+	newVal := val << 1
+	if isCarryFlagSet {
+		newVal |= 1
+	}
+
+	c.Registers.A = newVal
+	c.setRotateShiftFlags(newVal, isCarry)
+
+	return nil
+}
+
+// RLA: rotate A right through carry flag
+func (c *CPU) RRA(ops []instructions.Operand) error {
+	val := c.Registers.A
+
+	isCarry := bits.GetNBit(val, 0)
+	isCarryFlagSet := c.Registers.GetFlag(FlagC)
+	newVal := val >> 1
+	if isCarryFlagSet {
+		newVal |= (1 << 7)
+	}
+
+	c.Registers.A = newVal
+	c.setRotateShiftFlags(newVal, isCarry)
 
 	return nil
 }
