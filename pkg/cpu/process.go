@@ -38,6 +38,10 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		proc = c.LD
 	case instructions.LDH:
 		proc = c.LDH
+	case instructions.POP:
+		proc = c.POP
+	case instructions.PUSH:
+		proc = c.PUSH
 	case instructions.INC:
 		proc = c.INC
 	case instructions.DEC:
@@ -59,8 +63,6 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 
 // jumper: helper method for jump operations (JP, JR, CALL, RST, etc)
 func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) error {
-	var addr uint16
-
 	// check if has conditional
 	if len(ops) > 1 {
 		condition := ops[0].Symbol.(instructions.Condition)
@@ -70,10 +72,15 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 		}
 	}
 
-	if mnemonic == instructions.RET || mnemonic == instructions.RETI {
+	var addr uint16
+	switch mnemonic {
+	case instructions.RET, instructions.RETI:
 		// RET gets jump value from stack
 		addr = c.StackPop16()
-	} else {
+	case instructions.JR:
+		// relative jump
+		addr = c.Registers.PC + c.ValueOf(&ops[len(ops)-1])
+	default:
 		// otherwise get jump value from last operand
 		addr = c.ValueOf(&ops[len(ops)-1])
 	}

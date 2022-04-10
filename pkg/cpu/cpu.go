@@ -19,7 +19,7 @@ type CPU struct {
 // https://gbdev.io/pandocs/Power_Up_Sequence.html
 func New(cart *cartridge.Cartridge) *CPU {
 	return &CPU{
-		Registers: RegistersForDMG(cart),
+		Registers: TempRegisters(cart),
 		Cartridge: cart,
 		RAM:       &RAM{},
 		IME:       true,
