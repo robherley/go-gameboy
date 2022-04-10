@@ -164,8 +164,8 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 }
 
 // setRotateShiftFlags: helper to set flags for rotate/shift funcs
-func (c *CPU) setRotateShiftFlags(newVal byte, isCarry bool) {
-	c.Registers.SetFlag(FlagZ, newVal == 0)
+func (c *CPU) setRotateShiftFlags(result byte, isCarry bool) {
+	c.Registers.SetFlag(FlagZ, result == 0)
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, false)
 	c.Registers.SetFlag(FlagC, isCarry)
@@ -520,13 +520,13 @@ func (c *CPU) RLCA(ops []instructions.Operand) error {
 	val := c.Registers.A
 
 	isCarry := bits.GetNBit(val, 7)
-	newVal := val << 1
+	result := val << 1
 	if isCarry {
-		newVal |= 1
+		result |= 1
 	}
 
-	c.Registers.A = newVal
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.Registers.A = result
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -536,13 +536,13 @@ func (c *CPU) RRCA(ops []instructions.Operand) error {
 	val := c.Registers.A
 
 	isCarry := bits.GetNBit(val, 0)
-	newVal := val >> 1
+	result := val >> 1
 	if isCarry {
-		newVal |= (1 << 7)
+		result |= (1 << 7)
 	}
 
-	c.Registers.A = newVal
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.Registers.A = result
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -553,13 +553,13 @@ func (c *CPU) RLA(ops []instructions.Operand) error {
 
 	isCarry := bits.GetNBit(val, 7)
 	isCarryFlagSet := c.Registers.GetFlag(FlagC)
-	newVal := val << 1
+	result := val << 1
 	if isCarryFlagSet {
-		newVal |= 1
+		result |= 1
 	}
 
-	c.Registers.A = newVal
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.Registers.A = result
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -570,13 +570,13 @@ func (c *CPU) RRA(ops []instructions.Operand) error {
 
 	isCarry := bits.GetNBit(val, 0)
 	isCarryFlagSet := c.Registers.GetFlag(FlagC)
-	newVal := val >> 1
+	result := val >> 1
 	if isCarryFlagSet {
-		newVal |= (1 << 7)
+		result |= (1 << 7)
 	}
 
-	c.Registers.A = newVal
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.Registers.A = result
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -602,17 +602,17 @@ func (c *CPU) RES(ops []instructions.Operand) error {
 	bit := c.valueOf(&ops[0])
 	val := c.valueOf(&ops[1])
 
-	newVal := bits.ClearNBit(byte(val), byte(bit))
+	result := bits.ClearNBit(byte(val), byte(bit))
 
 	// set address if deref
 	if ops[1].Deref {
-		c.Write8(val, byte(newVal))
+		c.Write8(val, byte(result))
 	} else { // otherwise set register
 		reg := ops[1].Symbol.(instructions.Register)
-		c.Registers.Set(reg, uint16(newVal))
+		c.Registers.Set(reg, uint16(result))
 	}
 
-	c.setRegOrAddr(&ops[1], newVal)
+	c.setRegOrAddr(&ops[1], result)
 	// no flags affected
 
 	return nil
@@ -623,9 +623,9 @@ func (c *CPU) SET(ops []instructions.Operand) error {
 	bit := c.valueOf(&ops[0])
 	val := c.valueOf(&ops[1])
 
-	newVal := bits.SetNBit(byte(val), byte(bit))
+	result := bits.SetNBit(byte(val), byte(bit))
 
-	c.setRegOrAddr(&ops[1], newVal)
+	c.setRegOrAddr(&ops[1], result)
 	// no flags affected
 
 	return nil
@@ -636,13 +636,13 @@ func (c *CPU) RLC(ops []instructions.Operand) error {
 	val := byte(c.valueOf(&ops[0]))
 
 	isCarry := bits.GetNBit(byte(val), 7)
-	newVal := val << 1
+	result := val << 1
 	if isCarry {
-		newVal |= 1
+		result |= 1
 	}
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -653,13 +653,13 @@ func (c *CPU) RL(ops []instructions.Operand) error {
 
 	isCarry := bits.GetNBit(byte(val), 7)
 	isCarryFlagSet := c.Registers.GetFlag(FlagC)
-	newVal := val << 1
+	result := val << 1
 	if isCarryFlagSet {
-		newVal |= 1
+		result |= 1
 	}
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -669,13 +669,13 @@ func (c *CPU) RRC(ops []instructions.Operand) error {
 	val := byte(c.valueOf(&ops[0]))
 
 	isCarry := bits.GetNBit(byte(val), 0)
-	newVal := val >> 1
+	result := val >> 1
 	if isCarry {
-		newVal |= (1 << 7)
+		result |= (1 << 7)
 	}
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -686,13 +686,13 @@ func (c *CPU) RR(ops []instructions.Operand) error {
 
 	isCarry := bits.GetNBit(byte(val), 0)
 	isCarryFlagSet := c.Registers.GetFlag(FlagC)
-	newVal := val >> 1
+	result := val >> 1
 	if isCarryFlagSet {
-		newVal |= (1 << 7)
+		result |= (1 << 7)
 	}
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -701,11 +701,11 @@ func (c *CPU) RR(ops []instructions.Operand) error {
 func (c *CPU) SLA(ops []instructions.Operand) error {
 	val := byte(c.valueOf(&ops[0]))
 
-	newVal := val << 1
+	result := val << 1
 	isCarry := bits.GetNBit(byte(val), 7)
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -714,11 +714,11 @@ func (c *CPU) SLA(ops []instructions.Operand) error {
 func (c *CPU) SRA(ops []instructions.Operand) error {
 	val := byte(c.valueOf(&ops[0]))
 
-	newVal := (val >> 1) | (val & (1 << 7))
+	result := (val >> 1) | (val & (1 << 7))
 	isCarry := bits.GetNBit(byte(val), 0)
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -727,11 +727,11 @@ func (c *CPU) SRA(ops []instructions.Operand) error {
 func (c *CPU) SRL(ops []instructions.Operand) error {
 	val := byte(c.valueOf(&ops[0]))
 
-	newVal := val >> 1
+	result := val >> 1
 	isCarry := bits.GetNBit(byte(val), 0)
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.setRotateShiftFlags(newVal, isCarry)
+	c.setRegOrAddr(&ops[0], result)
+	c.setRotateShiftFlags(result, isCarry)
 
 	return nil
 }
@@ -743,10 +743,10 @@ func (c *CPU) SWAP(ops []instructions.Operand) error {
 	loNibs := val & 0x0F
 	hiNibs := val & 0xF0
 
-	newVal := (loNibs << 4) | (hiNibs >> 4)
+	result := (loNibs << 4) | (hiNibs >> 4)
 
-	c.setRegOrAddr(&ops[0], newVal)
-	c.Registers.SetFlag(FlagZ, newVal == 0)
+	c.setRegOrAddr(&ops[0], result)
+	c.Registers.SetFlag(FlagZ, result == 0)
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, false)
 	c.Registers.SetFlag(FlagC, false)
