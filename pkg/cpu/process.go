@@ -10,8 +10,8 @@ import (
 // https://gbdev.io/pandocs/CPU_Instruction_Set.html
 
 // Process an instruction for a given mnemonic, returns number of ticks
-func (c *CPU) Process(in *instructions.Instruction) error {
-	var proc func([]instructions.Operand) error
+func (c *CPU) Do(in *instructions.Instruction) {
+	var proc func([]instructions.Operand)
 
 	switch in.Mnemonic {
 	case instructions.NOP:
@@ -86,7 +86,7 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
 	}
 
-	return proc(in.Operands)
+	proc(in.Operands)
 }
 
 // valueOf: resolve the given instruction symbol's value based on CPU state
@@ -128,7 +128,7 @@ func (c *CPU) setRegOrAddr(operand *instructions.Operand, value byte) {
 }
 
 // jumper: helper for jump operations (JP, JR, CALL, RST, etc)
-func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) error {
+func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) {
 	var addr uint16
 	switch mnemonic {
 	case instructions.RET, instructions.RETI:
@@ -149,7 +149,7 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 		condition := ops[0].Symbol.(instructions.Condition)
 		if !c.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
-			return nil
+			return
 		}
 	}
 
@@ -159,8 +159,6 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 	}
 
 	c.Registers.PC = addr
-
-	return nil
 }
 
 // setRotateShiftFlags: helper to set flags for rotate/shift funcs
@@ -172,12 +170,10 @@ func (c *CPU) setRotateShiftFlags(result byte, isCarry bool) {
 }
 
 // NOP: No operation
-func (c *CPU) NOP(ops []instructions.Operand) error {
-	return nil
-}
+func (c *CPU) NOP(ops []instructions.Operand) {}
 
 // INC: increment register
-func (c *CPU) INC(ops []instructions.Operand) error {
+func (c *CPU) INC(ops []instructions.Operand) {
 	var result uint16
 
 	if ops[0].Deref {
@@ -194,18 +190,16 @@ func (c *CPU) INC(ops []instructions.Operand) error {
 	if ops[0].Is16() && !ops[0].Deref {
 		// if the parametes is 16 bit (and not a dereference)
 		// then no flags get set (see instructions 0x03, 0x13, etc)
-		return nil
+		return
 	}
 
 	c.Registers.SetFlag(FlagZ, result == 0)
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, (result&0xF) == 0)
-
-	return nil
 }
 
 // DEC: decrement register
-func (c *CPU) DEC(ops []instructions.Operand) error {
+func (c *CPU) DEC(ops []instructions.Operand) {
 	var result uint16
 
 	if ops[0].Deref {
@@ -222,62 +216,57 @@ func (c *CPU) DEC(ops []instructions.Operand) error {
 	if ops[0].Is16() && !ops[0].Deref {
 		// if the parametes is 16 bit (and not a dereference)
 		// then no flags get set (see instructions 0x0B, 0x1B, etc)
-		return nil
+		return
 	}
 
 	c.Registers.SetFlag(FlagZ, result == 0)
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (result&0xF) == 0xF)
-
-	return nil
 }
 
 // JP: jump to address (and check condition)
-func (c *CPU) JP(ops []instructions.Operand) error {
-	return c.jumper(instructions.JP, ops)
+func (c *CPU) JP(ops []instructions.Operand) {
+	c.jumper(instructions.JP, ops)
 }
 
 // JR: jump to relative address (and check condition)
-func (c *CPU) JR(ops []instructions.Operand) error {
-	return c.jumper(instructions.JR, ops)
+func (c *CPU) JR(ops []instructions.Operand) {
+	c.jumper(instructions.JR, ops)
 }
 
 // CALL: push address of next instruction onto stack (and check condition)
-func (c *CPU) CALL(ops []instructions.Operand) error {
-	return c.jumper(instructions.CALL, ops)
+func (c *CPU) CALL(ops []instructions.Operand) {
+	c.jumper(instructions.CALL, ops)
 }
 
 // RST: push address on to stack, jump to n
-func (c *CPU) RST(ops []instructions.Operand) error {
-	return c.jumper(instructions.RST, ops)
+func (c *CPU) RST(ops []instructions.Operand) {
+	c.jumper(instructions.RST, ops)
 }
 
 // RET: pop two bytes from stack & jump to that address (and check condition)
-func (c *CPU) RET(ops []instructions.Operand) error {
-	return c.jumper(instructions.RET, ops)
+func (c *CPU) RET(ops []instructions.Operand) {
+	c.jumper(instructions.RET, ops)
 }
 
 // RETI: pop two bytes from stack & jump to that address then enable interrupts
-func (c *CPU) RETI(ops []instructions.Operand) error {
-	v := c.jumper(instructions.RETI, ops)
+func (c *CPU) RETI(ops []instructions.Operand) {
+	c.jumper(instructions.RETI, ops)
 	c.IME = true
-	return v
 }
 
 // DI: disables interrupts
-func (c *CPU) DI(ops []instructions.Operand) error {
+func (c *CPU) DI(ops []instructions.Operand) {
 	c.IME = false
-	return nil
 }
 
 // EI: enables interrupts
-func (c *CPU) EI(ops []instructions.Operand) error {
+func (c *CPU) EI(ops []instructions.Operand) {
 	c.IME = true
-	return nil
 }
 
 // LD: puts values from one operand into another
-func (c *CPU) LD(ops []instructions.Operand) error {
+func (c *CPU) LD(ops []instructions.Operand) {
 	numOps := len(ops)
 
 	// special case instruction for 0xF8
@@ -294,7 +283,7 @@ func (c *CPU) LD(ops []instructions.Operand) error {
 
 		c.Registers.SetHL(c.Registers.SP + r8)
 
-		return nil
+		return
 	}
 
 	dst := &ops[0]
@@ -331,12 +320,10 @@ func (c *CPU) LD(ops []instructions.Operand) error {
 			c.Registers.Set(instructions.HL, hl-1)
 		}
 	}
-
-	return nil
 }
 
 // LDH: loads/sets A from 8-bit signed data
-func (c *CPU) LDH(ops []instructions.Operand) error {
+func (c *CPU) LDH(ops []instructions.Operand) {
 	first := ops[0].Symbol
 	second := ops[1].Symbol
 
@@ -350,12 +337,10 @@ func (c *CPU) LDH(ops []instructions.Operand) error {
 		a8 := c.valueOf(&ops[0])
 		c.Write8(0xFF00|a8, c.Registers.A)
 	}
-
-	return nil
 }
 
 // POP: pops a two byte value off the stack
-func (c *CPU) POP(ops []instructions.Operand) error {
+func (c *CPU) POP(ops []instructions.Operand) {
 	val := c.StackPop16()
 
 	// special case for AF, protect last nibble for flags
@@ -365,20 +350,16 @@ func (c *CPU) POP(ops []instructions.Operand) error {
 		reg := ops[0].Symbol.(instructions.Register)
 		c.Registers.Set(reg, val)
 	}
-
-	return nil
 }
 
 // PUSH: pushes a two byte value on the stack
-func (c *CPU) PUSH(ops []instructions.Operand) error {
+func (c *CPU) PUSH(ops []instructions.Operand) {
 	val := c.valueOf(&ops[0])
 	c.StackPush16(val)
-
-	return nil
 }
 
 // ADD: Add a value to another value
-func (c *CPU) ADD(ops []instructions.Operand) error {
+func (c *CPU) ADD(ops []instructions.Operand) {
 	valA := c.valueOf(&ops[0])
 	valB := c.valueOf(&ops[1])
 
@@ -401,12 +382,10 @@ func (c *CPU) ADD(ops []instructions.Operand) error {
 		c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF) > 0xF)
 		c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF) > 0xFF)
 	}
-
-	return nil
 }
 
 // ADC: Add with carry
-func (c *CPU) ADC(ops []instructions.Operand) error {
+func (c *CPU) ADC(ops []instructions.Operand) {
 	valA := c.valueOf(&ops[0])
 	valB := c.valueOf(&ops[1])
 
@@ -421,12 +400,10 @@ func (c *CPU) ADC(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF)+carry > 0xF)
 	c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF)+carry > 0xFF)
-
-	return nil
 }
 
 // SUB: Subtract a value from another value
-func (c *CPU) SUB(ops []instructions.Operand) error {
+func (c *CPU) SUB(ops []instructions.Operand) {
 	valA := uint16(c.Registers.A)
 	valB := c.valueOf(&ops[0])
 	diff := valA - valB
@@ -436,12 +413,10 @@ func (c *CPU) SUB(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
-
-	return nil
 }
 
 // SBC: Subtract a value (with carry flag) from another value
-func (c *CPU) SBC(ops []instructions.Operand) error {
+func (c *CPU) SBC(ops []instructions.Operand) {
 	valA := uint16(c.Registers.A)
 	valB := c.valueOf(&ops[0])
 
@@ -457,12 +432,10 @@ func (c *CPU) SBC(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF)+carry)
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF)+carry)
-
-	return nil
 }
 
 // AND: logical AND with register A
-func (c *CPU) AND(ops []instructions.Operand) error {
+func (c *CPU) AND(ops []instructions.Operand) {
 	val := c.valueOf(&ops[0])
 	c.Registers.A &= bits.Lo(val)
 
@@ -470,12 +443,10 @@ func (c *CPU) AND(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, true)
 	c.Registers.SetFlag(FlagC, false)
-
-	return nil
 }
 
 // OR: logical OR with register A
-func (c *CPU) OR(ops []instructions.Operand) error {
+func (c *CPU) OR(ops []instructions.Operand) {
 	val := c.valueOf(&ops[0])
 	c.Registers.A |= bits.Lo(val)
 
@@ -483,12 +454,10 @@ func (c *CPU) OR(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, false)
 	c.Registers.SetFlag(FlagC, false)
-
-	return nil
 }
 
 // XOR: logical exclusive OR with register A
-func (c *CPU) XOR(ops []instructions.Operand) error {
+func (c *CPU) XOR(ops []instructions.Operand) {
 	val := c.valueOf(&ops[0])
 	c.Registers.A ^= bits.Lo(val)
 
@@ -496,12 +465,10 @@ func (c *CPU) XOR(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, false)
 	c.Registers.SetFlag(FlagC, false)
-
-	return nil
 }
 
 // CP: compare with A (subtraction without setting result)
-func (c *CPU) CP(ops []instructions.Operand) error {
+func (c *CPU) CP(ops []instructions.Operand) {
 	valA := uint16(c.Registers.A)
 	valB := c.valueOf(&ops[0])
 	diff := valA - valB
@@ -511,12 +478,10 @@ func (c *CPU) CP(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
-
-	return nil
 }
 
 // RLCA: rotate A left. Old bit 7 to carry flag
-func (c *CPU) RLCA(ops []instructions.Operand) error {
+func (c *CPU) RLCA(ops []instructions.Operand) {
 	val := c.Registers.A
 
 	isCarry := bits.GetNBit(val, 7)
@@ -527,12 +492,10 @@ func (c *CPU) RLCA(ops []instructions.Operand) error {
 
 	c.Registers.A = result
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // RLCA: rotate A right. Old bit 0 to carry flag
-func (c *CPU) RRCA(ops []instructions.Operand) error {
+func (c *CPU) RRCA(ops []instructions.Operand) {
 	val := c.Registers.A
 
 	isCarry := bits.GetNBit(val, 0)
@@ -543,12 +506,10 @@ func (c *CPU) RRCA(ops []instructions.Operand) error {
 
 	c.Registers.A = result
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // RLA: rotate A left through carry flag
-func (c *CPU) RLA(ops []instructions.Operand) error {
+func (c *CPU) RLA(ops []instructions.Operand) {
 	val := c.Registers.A
 
 	isCarry := bits.GetNBit(val, 7)
@@ -560,12 +521,10 @@ func (c *CPU) RLA(ops []instructions.Operand) error {
 
 	c.Registers.A = result
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // RLA: rotate A right through carry flag
-func (c *CPU) RRA(ops []instructions.Operand) error {
+func (c *CPU) RRA(ops []instructions.Operand) {
 	val := c.Registers.A
 
 	isCarry := bits.GetNBit(val, 0)
@@ -577,12 +536,10 @@ func (c *CPU) RRA(ops []instructions.Operand) error {
 
 	c.Registers.A = result
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // BIT: (cb-prefixed) test bit in a register
-func (c *CPU) BIT(ops []instructions.Operand) error {
+func (c *CPU) BIT(ops []instructions.Operand) {
 	bit := c.valueOf(&ops[0])
 	val := c.valueOf(&ops[1])
 
@@ -593,12 +550,10 @@ func (c *CPU) BIT(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, true)
 	// carry flag not affected
-
-	return nil
 }
 
 // RES: (cb-prefixed) reset bit b in a register
-func (c *CPU) RES(ops []instructions.Operand) error {
+func (c *CPU) RES(ops []instructions.Operand) {
 	bit := c.valueOf(&ops[0])
 	val := c.valueOf(&ops[1])
 
@@ -614,12 +569,10 @@ func (c *CPU) RES(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[1], result)
 	// no flags affected
-
-	return nil
 }
 
 // SET: (cb-prefixed) set bit b in a register
-func (c *CPU) SET(ops []instructions.Operand) error {
+func (c *CPU) SET(ops []instructions.Operand) {
 	bit := c.valueOf(&ops[0])
 	val := c.valueOf(&ops[1])
 
@@ -627,12 +580,10 @@ func (c *CPU) SET(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[1], result)
 	// no flags affected
-
-	return nil
 }
 
 // RLC: (cb-prefixed) rotate left, old bit 7 to carry
-func (c *CPU) RLC(ops []instructions.Operand) error {
+func (c *CPU) RLC(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	isCarry := bits.GetNBit(byte(val), 7)
@@ -643,12 +594,10 @@ func (c *CPU) RLC(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // RL: (cb-prefixed) rotate left through carry
-func (c *CPU) RL(ops []instructions.Operand) error {
+func (c *CPU) RL(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	isCarry := bits.GetNBit(byte(val), 7)
@@ -660,12 +609,10 @@ func (c *CPU) RL(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // RRC: (cb-prefixed) rotate right, old bit 0 to carry
-func (c *CPU) RRC(ops []instructions.Operand) error {
+func (c *CPU) RRC(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	isCarry := bits.GetNBit(byte(val), 0)
@@ -676,12 +623,10 @@ func (c *CPU) RRC(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // RR: (cb-prefixed) rotate right through carry
-func (c *CPU) RR(ops []instructions.Operand) error {
+func (c *CPU) RR(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	isCarry := bits.GetNBit(byte(val), 0)
@@ -693,12 +638,10 @@ func (c *CPU) RR(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // SLA: (cb-prefixed) shift left into carry. LSB of n set to 0
-func (c *CPU) SLA(ops []instructions.Operand) error {
+func (c *CPU) SLA(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	result := val << 1
@@ -706,12 +649,10 @@ func (c *CPU) SLA(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // SRA: (cb-prefixed) shift right into carry. MSB unaffected
-func (c *CPU) SRA(ops []instructions.Operand) error {
+func (c *CPU) SRA(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	result := (val >> 1) | (val & (1 << 7))
@@ -719,12 +660,10 @@ func (c *CPU) SRA(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // SRL: (cb-prefixed) shift right into carry. MSB set to 0
-func (c *CPU) SRL(ops []instructions.Operand) error {
+func (c *CPU) SRL(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	result := val >> 1
@@ -732,12 +671,10 @@ func (c *CPU) SRL(ops []instructions.Operand) error {
 
 	c.setRegOrAddr(&ops[0], result)
 	c.setRotateShiftFlags(result, isCarry)
-
-	return nil
 }
 
 // SWAP: (cb-prefixed) swap upper & lower nibbles
-func (c *CPU) SWAP(ops []instructions.Operand) error {
+func (c *CPU) SWAP(ops []instructions.Operand) {
 	val := byte(c.valueOf(&ops[0]))
 
 	loNibs := val & 0x0F
@@ -750,6 +687,4 @@ func (c *CPU) SWAP(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, false)
 	c.Registers.SetFlag(FlagC, false)
-
-	return nil
 }

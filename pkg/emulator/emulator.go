@@ -37,16 +37,13 @@ func (emu *Emulator) Step() {
 		opcode = emu.CPU.Fetch8()
 	}
 
-	in := instructions.FromOPCode(opcode, isCBPrexied)
-	if in == nil {
+	instruction := instructions.FromOPCode(opcode, isCBPrexied)
+	if instruction == nil {
 		panic(fmt.Errorf("unknown instruction: 0x%x", opcode))
 	}
-	pretty.Instruction(currentPC, opcode, in, isCBPrexied)
+	pretty.Instruction(currentPC, opcode, instruction, isCBPrexied)
 
-	err := emu.CPU.Process(in)
-	if err != nil {
-		panic(err)
-	}
+	emu.CPU.Do(instruction)
 	pretty.CPU(emu.CPU)
 
 	// emu.doTicks(ticks)
