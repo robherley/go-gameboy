@@ -1,4 +1,4 @@
-module github.com/robherley/go-dmg
+module github.com/robherley/go-gameboy
 
 go 1.18
 

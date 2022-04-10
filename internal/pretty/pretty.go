@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/pterm/pterm"
-	"github.com/robherley/go-dmg/pkg/cartridge"
-	"github.com/robherley/go-dmg/pkg/cpu"
-	"github.com/robherley/go-dmg/pkg/instructions"
+	"github.com/robherley/go-gameboy/pkg/cartridge"
+	"github.com/robherley/go-gameboy/pkg/cpu"
+	"github.com/robherley/go-gameboy/pkg/instructions"
 )
 
 var Hide = false
@@ -18,7 +18,7 @@ func Title() {
 
 	fmt.Println()
 	pterm.DefaultBigText.WithLetters(
-		pterm.NewLettersFromStringWithStyle("go-dmg", pterm.NewStyle(pterm.FgLightMagenta)),
+		pterm.NewLettersFromStringWithStyle("go-gameboy", pterm.NewStyle(pterm.FgLightMagenta)),
 	).Render()
 }
 

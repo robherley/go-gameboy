@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/robherley/go-dmg/internal/pretty"
-	"github.com/robherley/go-dmg/pkg/cartridge"
-	"github.com/robherley/go-dmg/pkg/emulator"
+	"github.com/robherley/go-gameboy/internal/pretty"
+	"github.com/robherley/go-gameboy/pkg/cartridge"
+	"github.com/robherley/go-gameboy/pkg/emulator"
 )
 
 func main() {

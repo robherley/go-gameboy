@@ -3,11 +3,11 @@ package emulator
 import (
 	"fmt"
 
-	"github.com/robherley/go-dmg/internal/pretty"
-	"github.com/robherley/go-dmg/pkg/cartridge"
-	"github.com/robherley/go-dmg/pkg/cpu"
-	errs "github.com/robherley/go-dmg/pkg/errors"
-	"github.com/robherley/go-dmg/pkg/instructions"
+	"github.com/robherley/go-gameboy/internal/pretty"
+	"github.com/robherley/go-gameboy/pkg/cartridge"
+	"github.com/robherley/go-gameboy/pkg/cpu"
+	errs "github.com/robherley/go-gameboy/pkg/errors"
+	"github.com/robherley/go-gameboy/pkg/instructions"
 )
 
 type Emulator struct {

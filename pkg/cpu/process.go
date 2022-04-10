@@ -1,9 +1,9 @@
 package cpu
 
 import (
-	"github.com/robherley/go-dmg/internal/bits"
-	errs "github.com/robherley/go-dmg/pkg/errors"
-	"github.com/robherley/go-dmg/pkg/instructions"
+	"github.com/robherley/go-gameboy/internal/bits"
+	errs "github.com/robherley/go-gameboy/pkg/errors"
+	"github.com/robherley/go-gameboy/pkg/instructions"
 )
 
 // https://gbdev.io/pandocs/CPU_Instruction_Set.html

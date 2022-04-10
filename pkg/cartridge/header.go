@@ -3,7 +3,7 @@ package cartridge
 import (
 	"fmt"
 
-	"github.com/robherley/go-dmg/internal/bits"
+	"github.com/robherley/go-gameboy/internal/bits"
 )
 
 // https://gbdev.io/pandocs/The_Cartridge_Header.html

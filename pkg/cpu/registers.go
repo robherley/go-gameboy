@@ -1,10 +1,10 @@
 package cpu
 
 import (
-	"github.com/robherley/go-dmg/internal/bits"
-	"github.com/robherley/go-dmg/pkg/cartridge"
-	errs "github.com/robherley/go-dmg/pkg/errors"
-	"github.com/robherley/go-dmg/pkg/instructions"
+	"github.com/robherley/go-gameboy/internal/bits"
+	"github.com/robherley/go-gameboy/pkg/cartridge"
+	errs "github.com/robherley/go-gameboy/pkg/errors"
+	"github.com/robherley/go-gameboy/pkg/instructions"
 )
 
 // https://gbdev.io/pandocs/CPU_Registers_and_Flags.html#registers

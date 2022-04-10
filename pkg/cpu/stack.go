@@ -1,6 +1,6 @@
 package cpu
 
-import "github.com/robherley/go-dmg/internal/bits"
+import "github.com/robherley/go-gameboy/internal/bits"
 
 func (c *CPU) StackPush8(data byte) {
 	c.Registers.SP--

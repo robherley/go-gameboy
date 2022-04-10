@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	errs "github.com/robherley/go-dmg/pkg/errors"
+	errs "github.com/robherley/go-gameboy/pkg/errors"
 )
 
 type Cartridge struct {

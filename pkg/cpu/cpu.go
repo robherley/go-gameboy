@@ -1,7 +1,7 @@
 package cpu
 
 import (
-	"github.com/robherley/go-dmg/pkg/cartridge"
+	"github.com/robherley/go-gameboy/pkg/cartridge"
 )
 
 type CPU struct {

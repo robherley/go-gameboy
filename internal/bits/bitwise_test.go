@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/robherley/go-dmg/internal/bits"
+	"github.com/robherley/go-gameboy/internal/bits"
 )
 
 func TestLo(t *testing.T) {

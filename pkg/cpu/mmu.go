@@ -3,8 +3,8 @@ package cpu
 import (
 	"fmt"
 
-	"github.com/robherley/go-dmg/internal/bits"
-	errs "github.com/robherley/go-dmg/pkg/errors"
+	"github.com/robherley/go-gameboy/internal/bits"
+	errs "github.com/robherley/go-gameboy/pkg/errors"
 )
 
 // https://gbdev.io/pandocs/Memory_Map.html
