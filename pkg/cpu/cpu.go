@@ -9,8 +9,10 @@ type CPU struct {
 	Cartridge *cartridge.Cartridge
 	RAM       *RAM
 
-	IME bool
-	IE  byte
+	IsHalted    bool
+	IME         bool
+	EnablingIME bool
+	IE          byte
 }
 
 // https://gbdev.io/pandocs/Power_Up_Sequence.html

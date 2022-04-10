@@ -3,8 +3,6 @@ package cartridge
 import (
 	"fmt"
 	"os"
-
-	errs "github.com/robherley/go-gameboy/pkg/errors"
 )
 
 type Cartridge struct {
@@ -33,5 +31,5 @@ func (c *Cartridge) Read(address uint16) byte {
 }
 
 func (c *Cartridge) Write(address uint16, value byte) {
-	panic(errs.NewWriteError(address, "cartridge"))
+	// panic(errs.NewWriteError(address, "cartridge"))
 }

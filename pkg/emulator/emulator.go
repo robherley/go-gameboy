@@ -47,6 +47,10 @@ func (emu *Emulator) Step() {
 	emu.CPU.Process(instruction)
 	pretty.CPU(emu.CPU)
 
+	// TODO: temp
+	if emu.CPU.IsHalted {
+		panic("halted!")
+	}
 	// emu.doTicks(ticks)
 }
 

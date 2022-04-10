@@ -1,8 +1,6 @@
 package cpu
 
 import (
-	"fmt"
-
 	"github.com/robherley/go-gameboy/internal/bits"
 	errs "github.com/robherley/go-gameboy/pkg/errors"
 )
@@ -40,7 +38,8 @@ func (c *CPU) Read8(address uint16) byte {
 	if address <= ROM_END {
 		return c.Cartridge.Read(address)
 	} else if address <= CHAR_MAP_END {
-		panic(errs.NewReadError(address, "TODO read char map"))
+		// panic(errs.NewReadError(address, "TODO read char map"))
+		return 0
 	} else if address <= CART_RAM_END {
 		return c.Cartridge.Read(address)
 	} else if address <= WRAM_END {
@@ -48,11 +47,13 @@ func (c *CPU) Read8(address uint16) byte {
 	} else if address <= RES_ECHO_END {
 		panic(errs.NewReadError(address, "reserved echo memory"))
 	} else if address <= OAM_END {
-		panic(errs.NewReadError(address, "TODO OAM"))
+		// panic(errs.NewReadError(address, "TODO OAM"))
+		return 0
 	} else if address <= RES_UNUSE_END {
 		panic(errs.NewReadError(address, "reserved unused memory"))
 	} else if address <= IO_REG_END {
-		panic(errs.NewReadError(address, "TODO io read reg"))
+		// panic(errs.NewReadError(address, "TODO io read reg"))
+		return 0
 	} else if address <= HRAM_END {
 		return c.RAM.HRAMRead(address)
 	} else if address == IN_ENABLE_REG {
@@ -74,7 +75,8 @@ func (c *CPU) Write8(address uint16, value byte) {
 		c.Cartridge.Write(address, value)
 		return
 	} else if address <= CHAR_MAP_END {
-		panic(errs.NewWriteError(address, "TODO char map"))
+		// panic(errs.NewWriteError(address, "TODO char map"))
+		return
 	} else if address <= CART_RAM_END {
 		c.Cartridge.Write(address, value)
 		return
@@ -84,11 +86,12 @@ func (c *CPU) Write8(address uint16, value byte) {
 	} else if address <= RES_ECHO_END {
 		panic(errs.NewWriteError(address, "reserved echo memory"))
 	} else if address <= OAM_END {
-		panic(errs.NewWriteError(address, "TODO OAM"))
+		// panic(errs.NewWriteError(address, "TODO OAM"))
+		return
 	} else if address <= RES_UNUSE_END {
 		panic(errs.NewWriteError(address, "reserved unused memory"))
 	} else if address <= IO_REG_END {
-		fmt.Println(fmt.Errorf("TODO write io reg: 0x%04x", address))
+		// panic(errs.NewWriteError(address, "TODO io reg"))
 		return
 	} else if address <= HRAM_END {
 		c.RAM.HRAMWrite(address, value)

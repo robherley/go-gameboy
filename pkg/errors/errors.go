@@ -14,7 +14,7 @@ var (
 )
 
 func NewInvalidOperandError(operand any) error {
-	return fmt.Errorf("%w: %s (%T)", InvalidOperandError, operand, operand)
+	return fmt.Errorf("%w: %v (%T)", InvalidOperandError, operand, operand)
 }
 
 func NewOperandSymbolError(got, want any) error {

@@ -17,6 +17,8 @@ func (c *CPU) Process(in *instructions.Instruction) {
 		proc = c.NOP
 	case instructions.STOP:
 		proc = c.STOP
+	case instructions.HALT:
+		proc = c.HALT
 	case instructions.JP:
 		proc = c.JP
 	case instructions.JR:
@@ -181,10 +183,15 @@ func (c *CPU) setRotateShiftFlags(result byte, isCarry bool) {
 // NOP: No operation
 func (c *CPU) NOP(ops []instructions.Operand) {}
 
-// STOP: halts operation
+// STOP: halts CPU and display until button pressed
 func (c *CPU) STOP(ops []instructions.Operand) {
 	// TODO: figure out how this should actually behave
 	panic(errs.NotImplementedError)
+}
+
+// HALT: power down CPU until an interrupt occurs
+func (c *CPU) HALT(ops []instructions.Operand) {
+	c.IsHalted = true
 }
 
 // INC: increment register
@@ -277,7 +284,7 @@ func (c *CPU) DI(ops []instructions.Operand) {
 
 // EI: enables interrupts
 func (c *CPU) EI(ops []instructions.Operand) {
-	c.IME = true
+	c.EnablingIME = true
 }
 
 // LD: puts values from one operand into another
