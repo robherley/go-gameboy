@@ -42,6 +42,14 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		proc = c.INC
 	case instructions.DEC:
 		proc = c.DEC
+	case instructions.ADD:
+		proc = c.ADD
+	case instructions.ADC:
+		proc = c.ADC
+	case instructions.SUB:
+		proc = c.SUB
+	case instructions.SBC:
+		proc = c.SBC
 	default:
 		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
 	}
@@ -55,7 +63,7 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 
 	// check if has conditional
 	if len(ops) > 1 {
-		condition, _ := ops[0].Symbol.(instructions.Condition)
+		condition := ops[0].Symbol.(instructions.Condition)
 		if !c.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
 			return nil
@@ -70,7 +78,7 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 		addr = c.ValueOf(&ops[len(ops)-1])
 	}
 
-	// push program counter, used for CALL & RST
+	// push program counter to stack, used for CALL & RST
 	if mnemonic == instructions.CALL || mnemonic == instructions.RST {
 		c.StackPush16(c.Registers.PC)
 	}
@@ -95,7 +103,7 @@ func (c *CPU) INC(ops []instructions.Operand) error {
 		result = uint16(c.Read8(addr)) + 1
 		c.Write8(addr, byte(result))
 	} else {
-		reg, _ := ops[0].Symbol.(instructions.Register)
+		reg := ops[0].Symbol.(instructions.Register)
 		result = c.Registers.Get(reg) + 1
 		c.Registers.Set(reg, result)
 	}
@@ -123,7 +131,7 @@ func (c *CPU) DEC(ops []instructions.Operand) error {
 		result = uint16(c.Read8(addr)) - 1
 		c.Write8(addr, byte(result))
 	} else {
-		reg, _ := ops[0].Symbol.(instructions.Register)
+		reg := ops[0].Symbol.(instructions.Register)
 		result = c.Registers.Get(reg) - 1
 		c.Registers.Set(reg, result)
 	}
@@ -211,18 +219,10 @@ func (c *CPU) LD(ops []instructions.Operand) error {
 	if numOps == 3 {
 		r8 := c.ValueOf(&ops[2])
 
-		// half carry (4 bits)
-		setH := (c.Registers.SP&0xF)+(r8&0xF) > 0xF
-		if setH {
-			c.Registers.SetFlag(FlagH, true)
-		}
-
-		// carry (8 bits)
-		setC := (c.Registers.SP&0xFF)+(r8&0xFF) > 0xFF
-		if setC {
-			c.Registers.SetFlag(FlagC, true)
-		}
-
+		// half carry (nibble)
+		c.Registers.SetFlag(FlagH, (c.Registers.SP&0xF)+(r8&0xF) > 0xF)
+		// carry (byte)
+		c.Registers.SetFlag(FlagC, (c.Registers.SP&0xFF)+(r8&0xFF) > 0xFF)
 		// reset other flags
 		c.Registers.SetFlag(FlagZ, false)
 		c.Registers.SetFlag(FlagN, false)
@@ -297,17 +297,101 @@ func (c *CPU) POP(ops []instructions.Operand) error {
 	if ops[0].Symbol == instructions.AF {
 		c.Registers.SetAF(val & 0xFFF0)
 	} else {
-		reg, _ := ops[0].Symbol.(instructions.Register)
+		reg := ops[0].Symbol.(instructions.Register)
 		c.Registers.Set(reg, val)
 	}
 
 	return nil
 }
 
-// PUSH: pushes a two byte value on the stacks
+// PUSH: pushes a two byte value on the stack
 func (c *CPU) PUSH(ops []instructions.Operand) error {
 	val := c.ValueOf(&ops[0])
 	c.StackPush16(val)
+
+	return nil
+}
+
+// ADD: Add a value to another value
+func (c *CPU) ADD(ops []instructions.Operand) error {
+	valA := c.ValueOf(&ops[0])
+	valB := c.ValueOf(&ops[1])
+
+	reg := ops[0].Symbol.(instructions.Register)
+	sum := valA + valB
+
+	c.Registers.Set(reg, sum)
+	c.Registers.SetFlag(FlagN, false)
+
+	// special case for 0xE8, adding n to stack pointer
+	if ops[0].Symbol == instructions.SP {
+		c.Registers.SetFlag(FlagZ, false)
+		c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF) > 0xF)
+		c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF) > 0xFF)
+	} else if ops[0].Is16() { // 16bit add
+		c.Registers.SetFlag(FlagH, (valA&0xFFF)+(valB&0xFFF) > 0xFFF)
+		c.Registers.SetFlag(FlagH, (uint32(valA)&0xFFFF)+(uint32(valB)&0xFFFF) > 0xFFFF)
+	} else { // 8bit add
+		c.Registers.SetFlag(FlagZ, sum == 0)
+		c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF) > 0xF)
+		c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF) > 0xFF)
+	}
+
+	return nil
+}
+
+// ADC: Add with carry
+func (c *CPU) ADC(ops []instructions.Operand) error {
+	valA := c.ValueOf(&ops[0])
+	valB := c.ValueOf(&ops[1])
+
+	var carry uint16
+	if c.Registers.GetFlag(FlagC) {
+		carry = 1
+	}
+
+	sum := valA + valB + carry
+
+	c.Registers.SetFlag(FlagZ, sum == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF)+carry > 0xF)
+	c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF)+carry > 0xFF)
+
+	return nil
+}
+
+// SUB: Subtract a value from another value
+func (c *CPU) SUB(ops []instructions.Operand) error {
+	valA := uint16(c.Registers.A)
+	valB := c.ValueOf(&ops[0])
+	diff := valA - valB
+
+	c.Registers.Set(instructions.A, diff)
+	c.Registers.SetFlag(FlagZ, diff == 0)
+	c.Registers.SetFlag(FlagN, true)
+	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
+	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
+
+	return nil
+}
+
+// SBC: Subtract a value (with carry flag) from another value
+func (c *CPU) SBC(ops []instructions.Operand) error {
+	valA := uint16(c.Registers.A)
+	valB := c.ValueOf(&ops[0])
+
+	var carry uint16
+	if c.Registers.GetFlag(FlagC) {
+		carry = 1
+	}
+
+	diff := valA - valB + carry
+
+	c.Registers.Set(instructions.A, diff)
+	c.Registers.SetFlag(FlagZ, diff == 0)
+	c.Registers.SetFlag(FlagN, true)
+	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF)+carry)
+	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF)+carry)
 
 	return nil
 }
