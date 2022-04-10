@@ -3,6 +3,7 @@ package cartridge
 // https://gbdev.io/pandocs/The_Cartridge_Header.html#0147---cartridge-type
 type CartridgeType byte
 
+//go:generate stringer -type=CartridgeType
 const (
 	ROM_ONLY                       CartridgeType = 0x00
 	MBC1                           CartridgeType = 0x01
@@ -256,36 +257,5 @@ var (
 		0xF0: "a wave",
 		0xF3: "extreme entertainment",
 		0xFF: "ljn",
-	}
-
-	CartridgeTypeStrings = map[CartridgeType]string{
-		ROM_ONLY:                       "ROM_ONLY",
-		MBC1:                           "MBC1",
-		MB1_RAM:                        "MB1_RAM",
-		MBC1_RAM_BATTERY:               "MBC1_RAM_BATTERY",
-		MBC2:                           "MBC2",
-		MBC2_BATTERY:                   "MBC2_BATTERY",
-		ROM_RAM:                        "ROM_RAM",
-		ROM_RAM_BATTERY:                "ROM_RAM_BATTERY",
-		MMM01:                          "MMM01",
-		MMM01_RAM:                      "MMM01_RAM",
-		MMM01_RAM_BATTERY:              "MMM01_RAM_BATTERY",
-		MBC3_TIMER_BATTERY:             "MBC3_TIMER_BATTERY",
-		MBC3_TIMER_RAM_BATTERY:         "MBC3_TIMER_RAM_BATTERY",
-		MBC3:                           "MBC3",
-		MBC3_RAM:                       "MBC3_RAM",
-		MBC3_RAM_BATTERY:               "MBC3_RAM_BATTERY",
-		MBC5:                           "MBC5",
-		MBC5_RAM:                       "MBC5_RAM",
-		MBC5_RAM_BATTERY:               "MBC5_RAM_BATTERY",
-		MBC5_RUMBLE:                    "MBC5_RUMBLE",
-		MBC5_RUMBLE_RAM:                "MBC5_RUMBLE_RAM",
-		MBC5_RUMBLE_RAM_BATTERY:        "MBC5_RUMBLE_RAM_BATTERY",
-		MBC6:                           "MBC6",
-		MBC7_SENSOR_RUMBLE_RAM_BATTERY: "MBC7_SENSOR_RUMBLE_RAM_BATTERY",
-		POCKET_CAMERA:                  "POCKET_CAMERA",
-		BANDAI_TAMA5:                   "BANDAI_TAMA5",
-		HUC3:                           "HUC3",
-		HUC1_RAM_BATTERY:               "HUC1_RAM_BATTERY",
 	}
 )

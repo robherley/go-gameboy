@@ -39,7 +39,7 @@ func Cart(c *cartridge.Cartridge) {
 
 	pterm.DefaultTable.WithData(pterm.TableData{
 		{"Title", pterm.FgCyan.Sprint(c.TitleString())},
-		{"Type", fmt.Sprintf("%s (0x%02x)", c.CartridgeTypeString(), c.CartridgeType())},
+		{"Type", fmt.Sprintf("%s (0x%02x)", c.CartridgeType().String(), c.CartridgeType())},
 		{"Licensee", c.LicenseeString()},
 		{"Size", fmt.Sprintf("%dK", c.Size/1024)},
 		{"Header Checksum", headerCheck},
