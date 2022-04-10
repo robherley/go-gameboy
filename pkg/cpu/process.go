@@ -15,6 +15,8 @@ func (c *CPU) Process(in *instructions.Instruction) {
 	switch in.Mnemonic {
 	case instructions.NOP:
 		proc = c.NOP
+	case instructions.STOP:
+		proc = c.STOP
 	case instructions.JP:
 		proc = c.JP
 	case instructions.JR:
@@ -67,6 +69,14 @@ func (c *CPU) Process(in *instructions.Instruction) {
 		proc = c.RLA
 	case instructions.RRA:
 		proc = c.RRA
+	case instructions.DAA:
+		proc = c.DAA
+	case instructions.CPL:
+		proc = c.CPL
+	case instructions.CCF:
+		proc = c.CCF
+	case instructions.SCF:
+		proc = c.SCF
 	case instructions.BIT:
 		proc = c.BIT
 	case instructions.RES:
@@ -170,6 +180,12 @@ func (c *CPU) setRotateShiftFlags(result byte, isCarry bool) {
 
 // NOP: No operation
 func (c *CPU) NOP(ops []instructions.Operand) {}
+
+// STOP: halts operation
+func (c *CPU) STOP(ops []instructions.Operand) {
+	// TODO: figure out how this should actually behave
+	panic(errs.NotImplementedError)
+}
 
 // INC: increment register
 func (c *CPU) INC(ops []instructions.Operand) {
@@ -535,6 +551,74 @@ func (c *CPU) RRA(ops []instructions.Operand) {
 
 	c.Registers.A = result
 	c.setRotateShiftFlags(result, isCarry)
+}
+
+// DAA: decimal adjust register A
+func (c *CPU) DAA(ops []instructions.Operand) {
+	// this instruction is really weird, used for binary coded decimals (why is this a thing)
+	// tldr: 16 - 10 = 6 👍
+	// great explanation here: https://ehaskins.com/2018-01-30%20Z80%20DAA/
+	// implementation borrowed from: https://github.com/mvdnes/rboy/blob/d14b07ce600cdba80754873a9ca185e1513f07c5/src/cpu.rs#L791-L807
+
+	var adjust byte
+
+	// if half carry
+	if c.Registers.GetFlag(FlagH) {
+		adjust |= 0x6
+	}
+
+	// if full carry
+	if c.Registers.GetFlag(FlagC) {
+		adjust |= 0x60
+	}
+
+	// if addition, there's some extra checks
+	if !c.Registers.GetFlag(FlagN) {
+		// ten's place
+		if c.Registers.A&0xF > 0x9 {
+			adjust |= 0x6
+		}
+
+		// hundredth's place
+		if c.Registers.A > 0x99 {
+			adjust |= 0x60
+		}
+
+		c.Registers.A += adjust
+	} else {
+		c.Registers.A -= adjust
+	}
+
+	c.Registers.SetFlag(FlagZ, c.Registers.A == 0)
+	// flag N not affected
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, adjust >= 0x60)
+}
+
+// CPL: complement A register
+func (c *CPU) CPL(ops []instructions.Operand) {
+	c.Registers.A = ^c.Registers.A
+
+	// flag Z not affected
+	c.Registers.SetFlag(FlagN, true)
+	c.Registers.SetFlag(FlagH, true)
+	// flag C not affected
+}
+
+// SCF: set carry flag
+func (c *CPU) SCF(ops []instructions.Operand) {
+	// flag z not affected
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, true)
+}
+
+// CCF: complement carry flag
+func (c *CPU) CCF(ops []instructions.Operand) {
+	// flag z not affected
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, !c.Registers.GetFlag(FlagC))
 }
 
 // BIT: (cb-prefixed) test bit in a register
