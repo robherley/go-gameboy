@@ -32,8 +32,6 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		proc = c.DI
 	case instructions.EI:
 		proc = c.EI
-	case instructions.XOR:
-		proc = c.XOR
 	case instructions.LD:
 		proc = c.LD
 	case instructions.LDH:
@@ -54,6 +52,14 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		proc = c.SUB
 	case instructions.SBC:
 		proc = c.SBC
+	case instructions.AND:
+		proc = c.AND
+	case instructions.OR:
+		proc = c.OR
+	case instructions.XOR:
+		proc = c.XOR
+	case instructions.CP:
+		proc = c.CP
 	default:
 		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
 	}
@@ -197,24 +203,6 @@ func (c *CPU) DI(ops []instructions.Operand) error {
 // EI: enables interrupts
 func (c *CPU) EI(ops []instructions.Operand) error {
 	c.IME = true
-	return nil
-}
-
-// XOR: logical exclusive OR with register A
-func (c *CPU) XOR(ops []instructions.Operand) error {
-	value := c.ValueOf(&ops[0])
-	c.Registers.A ^= bits.Lo(value)
-
-	// set zero flag if result is zero
-	if c.Registers.A == 0 {
-		c.Registers.SetFlag(FlagZ, true)
-	}
-
-	// reset other flags
-	c.Registers.SetFlag(FlagN, false)
-	c.Registers.SetFlag(FlagH, false)
-	c.Registers.SetFlag(FlagC, false)
-
 	return nil
 }
 
@@ -399,6 +387,60 @@ func (c *CPU) SBC(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF)+carry)
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF)+carry)
+
+	return nil
+}
+
+// AND: logical AND with register A
+func (c *CPU) AND(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+	c.Registers.A &= bits.Lo(val)
+
+	c.Registers.SetFlag(FlagZ, c.Registers.A == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, true)
+	c.Registers.SetFlag(FlagC, false)
+
+	return nil
+}
+
+// OR: logical OR with register A
+func (c *CPU) OR(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+	c.Registers.A |= bits.Lo(val)
+
+	c.Registers.SetFlag(FlagZ, c.Registers.A == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, false)
+
+	return nil
+}
+
+// XOR: logical exclusive OR with register A
+func (c *CPU) XOR(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+	c.Registers.A ^= bits.Lo(val)
+
+	c.Registers.SetFlag(FlagZ, c.Registers.A == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, false)
+
+	return nil
+}
+
+// CP: compare with A (subtraction without setting result)
+func (c *CPU) CP(ops []instructions.Operand) error {
+	valA := uint16(c.Registers.A)
+	valB := c.ValueOf(&ops[0])
+	diff := valA - valB
+
+	c.Registers.Set(instructions.A, diff)
+	c.Registers.SetFlag(FlagZ, diff == 0)
+	c.Registers.SetFlag(FlagN, true)
+	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
+	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
 
 	return nil
 }
