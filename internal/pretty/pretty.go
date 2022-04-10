@@ -48,7 +48,7 @@ func Cart(c *cartridge.Cartridge) {
 	fmt.Println()
 }
 
-func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
+func Instruction(pc uint16, opcode byte, in *instructions.Instruction, isCBPrefixed bool) {
 	if Hide {
 		return
 	}
@@ -59,10 +59,14 @@ func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
 	if in.Operands == nil {
 		pterm.FgMagenta.Print("<nil>")
 	} else {
+		if isCBPrefixed {
+			pterm.FgBlue.Print("[CB] ")
+		}
+
 		for i, op := range in.Operands {
 			symbol := fmt.Sprintf("%v", op.Symbol)
-			if bite, ok := op.Symbol.(byte); ok {
-				symbol = fmt.Sprintf("0x%02x", bite)
+			if num, ok := op.Symbol.(byte); ok {
+				symbol = fmt.Sprintf("%d", num)
 			}
 
 			if op.Inc {

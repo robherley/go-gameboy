@@ -60,6 +60,20 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 		proc = c.XOR
 	case instructions.CP:
 		proc = c.CP
+	case instructions.BIT:
+		proc = c.BIT
+	case instructions.RES:
+		proc = c.RES
+	case instructions.SET:
+		proc = c.SET
+	case instructions.RLC:
+		proc = c.RLC
+	case instructions.RL:
+		proc = c.RL
+	case instructions.RRC:
+		proc = c.RRC
+	case instructions.RR:
+		proc = c.RR
 	default:
 		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
 	}
@@ -443,6 +457,148 @@ func (c *CPU) CP(ops []instructions.Operand) error {
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
+
+	return nil
+}
+
+// BIT: (cb-prefixed) test bit in a register
+func (c *CPU) BIT(ops []instructions.Operand) error {
+	bit := c.ValueOf(&ops[0])
+	val := c.ValueOf(&ops[1])
+
+	// will return t/f for nth bit in val
+	isSet := bits.GetNBit(byte(val), byte(bit))
+
+	c.Registers.SetFlag(FlagZ, !isSet)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, true)
+	// carry flag not affected
+
+	return nil
+}
+
+// RES: (cb-prefixed) reset bit b in a register
+func (c *CPU) RES(ops []instructions.Operand) error {
+	bit := c.ValueOf(&ops[0])
+	val := c.ValueOf(&ops[1])
+
+	newVal := bits.ClearNBit(byte(val), byte(bit))
+
+	// set address if deref
+	if ops[1].Deref {
+		c.Write8(val, byte(newVal))
+	} else { // otherwise set register
+		reg := ops[1].Symbol.(instructions.Register)
+		c.Registers.Set(reg, uint16(newVal))
+	}
+
+	// no flags affected
+
+	return nil
+}
+
+// SET: (cb-prefixed) set bit b in a register
+func (c *CPU) SET(ops []instructions.Operand) error {
+	bit := c.ValueOf(&ops[0])
+	val := c.ValueOf(&ops[1])
+
+	newVal := bits.SetNBit(byte(val), byte(bit))
+
+	// set address if deref
+	if ops[1].Deref {
+		c.Write8(val, byte(newVal))
+	} else { // otherwise set register
+		reg := ops[1].Symbol.(instructions.Register)
+		c.Registers.Set(reg, uint16(newVal))
+	}
+
+	// no flags affected
+
+	return nil
+}
+
+// RLC: (cb-prefixed) rotate left, old bit 7 to carry
+func (c *CPU) RLC(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+
+	isCarry := bits.GetNBit(byte(val), 7)
+	newVal := (val << 1) & 0xFF
+	if isCarry {
+		newVal |= 1
+	}
+
+	reg := ops[0].Symbol.(instructions.Register)
+	c.Registers.Set(reg, newVal)
+
+	c.Registers.SetFlag(FlagZ, newVal == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, isCarry)
+
+	return nil
+}
+
+// RL: (cb-prefixed) rotate left through carry
+func (c *CPU) RL(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+
+	isCarry := bits.GetNBit(byte(val), 7)
+	isCarryFlagSet := c.Registers.GetFlag(FlagC)
+	newVal := (val << 1) & 0xFF
+	if isCarryFlagSet {
+		newVal |= 1
+	}
+
+	reg := ops[0].Symbol.(instructions.Register)
+	c.Registers.Set(reg, newVal)
+
+	c.Registers.SetFlag(FlagZ, newVal == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, isCarry)
+
+	return nil
+}
+
+// RRC: (cb-prefixed) rotate right, old bit 0 to carry
+func (c *CPU) RRC(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+
+	isCarry := bits.GetNBit(byte(val), 0)
+	newVal := (val >> 1) & 0xFF
+	if isCarry {
+		newVal |= (1 << 7)
+	}
+
+	reg := ops[0].Symbol.(instructions.Register)
+	c.Registers.Set(reg, newVal)
+
+	c.Registers.SetFlag(FlagZ, newVal == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, isCarry)
+
+	return nil
+}
+
+// RR: (cb-prefixed) rotate right through carry
+func (c *CPU) RR(ops []instructions.Operand) error {
+	val := c.ValueOf(&ops[0])
+
+	isCarry := bits.GetNBit(byte(val), 0)
+	isCarryFlagSet := c.Registers.GetFlag(FlagC)
+	newVal := (val >> 1) & 0xFF
+	if isCarryFlagSet {
+		newVal |= (1 << 7)
+	}
+
+	reg := ops[0].Symbol.(instructions.Register)
+	c.Registers.Set(reg, newVal)
+
+	c.Registers.SetFlag(FlagZ, newVal == 0)
+	c.Registers.SetFlag(FlagN, false)
+	c.Registers.SetFlag(FlagH, false)
+	c.Registers.SetFlag(FlagC, isCarry)
 
 	return nil
 }

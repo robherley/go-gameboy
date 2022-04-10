@@ -31,11 +31,17 @@ func (emu *Emulator) Step() {
 	currentPC := emu.CPU.Registers.PC
 
 	opcode := emu.CPU.Fetch8()
-	in := instructions.FromOPCode(opcode, false)
+	isCBPrexied := opcode == 0xCB
+	if isCBPrexied {
+		// cb-prefixed instructions have opcode on next fetch
+		opcode = emu.CPU.Fetch8()
+	}
+
+	in := instructions.FromOPCode(opcode, isCBPrexied)
 	if in == nil {
 		panic(fmt.Errorf("unknown instruction: 0x%x", opcode))
 	}
-	pretty.Instruction(currentPC, opcode, in)
+	pretty.Instruction(currentPC, opcode, in, isCBPrexied)
 
 	err := emu.CPU.Process(in)
 	if err != nil {
