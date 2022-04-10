@@ -116,3 +116,11 @@ func CPU(c *cpu.CPU) {
 	pterm.FgDarkGray.Printf("  A: %s · F: %s · B: %s · C: %s · D: %s · E: %s · H: %s · L: %s\n", r8(c.Registers.A), r8(c.Registers.F), r8(c.Registers.B), r8(c.Registers.C), r8(c.Registers.D), r8(c.Registers.E), r8(c.Registers.H), r8(c.Registers.L))
 	pterm.FgDarkGray.Printf("  Z: %s · N: %s · H: %s · C: %s\n", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
 }
+
+func Interrupt(it cpu.Interrupt) {
+	if Hide {
+		return
+	}
+
+	pterm.NewStyle(pterm.FgBlack, pterm.BgYellow, pterm.Bold).Printf(" ❗ Interrupt: %s  \n", it)
+}

@@ -9,10 +9,16 @@ type CPU struct {
 	Cartridge *cartridge.Cartridge
 	RAM       *RAM
 
-	IsHalted    bool
-	IME         bool
+	IsHalted bool
+
+	// Interrupt Master Enable
+	IME bool
+	// Mark IME to be enabled next cycle
 	EnablingIME bool
-	IE          byte
+	// Interrupt Enable
+	IE byte
+	// Interrupt Flag
+	IF byte
 }
 
 // https://gbdev.io/pandocs/Power_Up_Sequence.html
