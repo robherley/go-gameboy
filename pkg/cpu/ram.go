@@ -1,6 +1,8 @@
 package cpu
 
-import "fmt"
+import (
+	errs "github.com/robherley/go-dmg/pkg/errors"
+)
 
 const (
 	WRAM_SIZE = 0x2000
@@ -19,7 +21,7 @@ type RAM struct {
 func (r *RAM) translateAddress(address, offset uint16) uint16 {
 	internalAddress := address - offset
 	if internalAddress >= WRAM_SIZE {
-		panic(fmt.Errorf("invalid wram access at %04x", address))
+		panic(errs.NewAccessError(address, "wram"))
 	}
 
 	return internalAddress

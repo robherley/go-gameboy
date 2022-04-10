@@ -3,6 +3,8 @@ package cartridge
 import (
 	"fmt"
 	"os"
+
+	errs "github.com/robherley/go-dmg/pkg/errors"
 )
 
 type Cartridge struct {
@@ -31,5 +33,5 @@ func (c *Cartridge) Read(address uint16) byte {
 }
 
 func (c *Cartridge) Write(address uint16, value byte) {
-	panic(fmt.Errorf("WRITE 0x%x to 0x%04x not allowed", value, address))
+	panic(errs.NewWriteError(address, "cartridge"))
 }

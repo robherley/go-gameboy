@@ -1,9 +1,8 @@
 package cpu
 
 import (
-	"fmt"
-
 	"github.com/robherley/go-dmg/internal/bits"
+	errs "github.com/robherley/go-dmg/pkg/errors"
 	"github.com/robherley/go-dmg/pkg/instructions"
 )
 
@@ -83,7 +82,7 @@ func (c *CPU) Process(in *instructions.Instruction) {
 	case instructions.RR:
 		proc = c.RR
 	default:
-		panic(fmt.Errorf("instruction not implemented: %s", in.Mnemonic))
+		panic(errs.NewInvalidMnemonicError(string(in.Mnemonic)))
 	}
 
 	proc(in.Operands)
@@ -110,7 +109,7 @@ func (c *CPU) valueOf(operand *instructions.Operand) uint16 {
 	case byte:
 		return uint16(symbol)
 	default:
-		panic(fmt.Errorf("invalid operand type: %T", symbol))
+		panic(errs.NewInvalidOperandError(symbol))
 	}
 }
 

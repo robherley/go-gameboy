@@ -1,10 +1,9 @@
 package cpu
 
 import (
-	"fmt"
-
 	"github.com/robherley/go-dmg/internal/bits"
 	"github.com/robherley/go-dmg/pkg/cartridge"
+	errs "github.com/robherley/go-dmg/pkg/errors"
 	"github.com/robherley/go-dmg/pkg/instructions"
 )
 
@@ -90,7 +89,7 @@ func (registers *Registers) Set(reg instructions.Register, value uint16) {
 	case instructions.HL:
 		registers.SetHL(value)
 	default:
-		panic(fmt.Errorf("invalid register: %v", reg))
+		panic(errs.NewInvalidOperandError(reg))
 	}
 }
 
@@ -125,7 +124,7 @@ func (registers *Registers) Get(reg instructions.Register) uint16 {
 	case instructions.HL:
 		return registers.GetHL()
 	default:
-		panic(fmt.Errorf("invalid register: %v", reg))
+		panic(errs.NewInvalidOperandError(reg))
 	}
 }
 
@@ -210,7 +209,7 @@ func (r *Registers) IsCondition(cond instructions.Condition) bool {
 	case instructions.Ca:
 		return r.GetFlag(FlagC)
 	default:
-		panic(fmt.Errorf("invalid condition: %v", cond))
+		panic(errs.NewInvalidOperandError(cond))
 	}
 }
 

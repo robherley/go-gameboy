@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/robherley/go-dmg/internal/bits"
+	errs "github.com/robherley/go-dmg/pkg/errors"
 )
 
 // https://gbdev.io/pandocs/Memory_Map.html
@@ -39,26 +40,26 @@ func (c *CPU) Read8(address uint16) byte {
 	if address <= ROM_END {
 		return c.Cartridge.Read(address)
 	} else if address <= CHAR_MAP_END {
-		panic(fmt.Errorf("TODO read char map: 0x%04x", address))
+		panic(errs.NewReadError(address, "TODO read char map"))
 	} else if address <= CART_RAM_END {
 		return c.Cartridge.Read(address)
 	} else if address <= WRAM_END {
 		return c.RAM.WRAMRead(address)
 	} else if address <= RES_ECHO_END {
-		panic(fmt.Errorf("invalid read of reserved echo memory: 0x%04x", address))
+		panic(errs.NewReadError(address, "reserved echo memory"))
 	} else if address <= OAM_END {
-		panic(fmt.Errorf("TODO read OAM: 0x%04x", address))
+		panic(errs.NewReadError(address, "TODO OAM"))
 	} else if address <= RES_UNUSE_END {
-		panic(fmt.Errorf("invalid read of reserved unused memory: 0x%04x", address))
+		panic(errs.NewReadError(address, "reserved unused memory"))
 	} else if address <= IO_REG_END {
-		panic(fmt.Errorf("TODO read io reg: 0x%04x", address))
+		panic(errs.NewReadError(address, "TODO io read reg"))
 	} else if address <= HRAM_END {
 		return c.RAM.HRAMRead(address)
 	} else if address == IN_ENABLE_REG {
 		return c.IE
 	}
 
-	panic(fmt.Errorf("invalid out of bound memory read: 0x%04x", address))
+	panic(errs.NewReadError(address, "mmu"))
 }
 
 func (c *CPU) Read16(address uint16) uint16 {
@@ -73,7 +74,7 @@ func (c *CPU) Write8(address uint16, value byte) {
 		c.Cartridge.Write(address, value)
 		return
 	} else if address <= CHAR_MAP_END {
-		panic(fmt.Errorf("TODO write char map: 0x%04x", address))
+		panic(errs.NewWriteError(address, "TODO char map"))
 	} else if address <= CART_RAM_END {
 		c.Cartridge.Write(address, value)
 		return
@@ -81,11 +82,11 @@ func (c *CPU) Write8(address uint16, value byte) {
 		c.RAM.WRAMWrite(address, value)
 		return
 	} else if address <= RES_ECHO_END {
-		panic(fmt.Errorf("invalid write of reserved echo memory: 0x%04x", address))
+		panic(errs.NewWriteError(address, "reserved echo memory"))
 	} else if address <= OAM_END {
-		panic(fmt.Errorf("TODO write OAM: 0x%04x", address))
+		panic(errs.NewWriteError(address, "TODO OAM"))
 	} else if address <= RES_UNUSE_END {
-		panic(fmt.Errorf("invalid write of reserved unused memory: 0x%04x", address))
+		panic(errs.NewWriteError(address, "reserved unused memory"))
 	} else if address <= IO_REG_END {
 		fmt.Println(fmt.Errorf("TODO write io reg: 0x%04x", address))
 		return
@@ -97,7 +98,7 @@ func (c *CPU) Write8(address uint16, value byte) {
 		return
 	}
 
-	panic(fmt.Errorf("invalid out of bound memory write: 0x%04x", address))
+	panic(errs.NewWriteError(address, "mmu"))
 }
 
 func (c *CPU) Write16(address uint16, value uint16) {

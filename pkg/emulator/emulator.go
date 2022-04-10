@@ -6,6 +6,7 @@ import (
 	"github.com/robherley/go-dmg/internal/pretty"
 	"github.com/robherley/go-dmg/pkg/cartridge"
 	"github.com/robherley/go-dmg/pkg/cpu"
+	errs "github.com/robherley/go-dmg/pkg/errors"
 	"github.com/robherley/go-dmg/pkg/instructions"
 )
 
@@ -39,7 +40,7 @@ func (emu *Emulator) Step() {
 
 	instruction := instructions.FromOPCode(opcode, isCBPrexied)
 	if instruction == nil {
-		panic(fmt.Errorf("unknown instruction: 0x%x", opcode))
+		panic(errs.NewUnknownOPCodeError(opcode))
 	}
 	pretty.Instruction(currentPC, opcode, instruction, isCBPrexied)
 
