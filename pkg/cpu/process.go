@@ -69,26 +69,28 @@ func (c *CPU) Process(in *instructions.Instruction) error {
 
 // jumper: helper method for jump operations (JP, JR, CALL, RST, etc)
 func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) error {
+	var addr uint16
+	switch mnemonic {
+	case instructions.RET, instructions.RETI:
+		// RET/RETI gets jump value from stack
+		addr = c.StackPop16()
+	case instructions.JR:
+		// relative jump, add to PC
+		val := c.ValueOf(&ops[len(ops)-1])
+		addr = c.Registers.PC + val
+	default:
+		// otherwise get jump value from last operand
+		addr = c.ValueOf(&ops[len(ops)-1])
+	}
+
 	// check if has conditional
+	// note: important to do this _after_ parameter read so PC is correct
 	if len(ops) > 1 {
 		condition := ops[0].Symbol.(instructions.Condition)
 		if !c.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
 			return nil
 		}
-	}
-
-	var addr uint16
-	switch mnemonic {
-	case instructions.RET, instructions.RETI:
-		// RET gets jump value from stack
-		addr = c.StackPop16()
-	case instructions.JR:
-		// relative jump
-		addr = c.Registers.PC + c.ValueOf(&ops[len(ops)-1])
-	default:
-		// otherwise get jump value from last operand
-		addr = c.ValueOf(&ops[len(ops)-1])
 	}
 
 	// push program counter to stack, used for CALL & RST
