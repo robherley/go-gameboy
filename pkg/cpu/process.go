@@ -75,12 +75,6 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 		c.StackPush16(c.Registers.PC)
 	}
 
-	// cast and add signed data for relative jump, used for JR
-	if mnemonic == instructions.JR {
-		rel := int8(addr & 0xFF)
-		addr = c.Registers.PC + uint16(rel)
-	}
-
 	c.Registers.PC = addr
 
 	return nil

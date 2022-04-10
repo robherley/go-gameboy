@@ -48,9 +48,12 @@ func (c *CPU) ValueOf(operand *instructions.Operand) uint16 {
 	case instructions.Data:
 		if operand.Is16() {
 			return c.Fetch16()
-		} else {
-			return uint16(c.Fetch8())
 		}
+		if operand.Symbol == instructions.R8 {
+			// R8 is signed, convert it to int8 first
+			return uint16(int8(c.Fetch8()))
+		}
+		return uint16(c.Fetch8())
 	case instructions.Register:
 		val := c.Registers.Get(symbol)
 		if operand.Deref {

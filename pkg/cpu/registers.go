@@ -71,7 +71,7 @@ func (registers *Registers) Set(reg instructions.Register, value uint16) {
 	case instructions.SP:
 		registers.SP = value
 	case instructions.PC:
-		registers.SP = value
+		registers.PC = value
 	case instructions.AF:
 		registers.SetAF(value)
 	case instructions.BC:

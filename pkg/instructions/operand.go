@@ -1,7 +1,7 @@
 package instructions
 
 import (
-	errors "github.com/robherley/go-dmg/pkg/errors"
+	errs "github.com/robherley/go-dmg/pkg/errors"
 )
 
 type Operand struct {
@@ -15,7 +15,7 @@ type Operand struct {
 	Dec bool
 }
 
-// Size returns the expected size (n=byte) for the operand
+// Size returns the expected size (n=byte) for the operand, does not account for dereference
 func (o *Operand) Size() byte {
 	switch o.Symbol {
 	case AF, BC, DE, HL, PC, SP, D16, A16:
@@ -41,7 +41,7 @@ func (o *Operand) IsRegister() bool {
 func (o *Operand) AsRegister() (Register, error) {
 	val, ok := o.Symbol.(Register)
 	if !ok {
-		return Register(""), errors.NewOperandSymbolError(o.Symbol, Register(""))
+		return Register(""), errs.NewOperandSymbolError(o.Symbol, Register(""))
 	}
 	return val, nil
 }
@@ -54,7 +54,7 @@ func (o *Operand) IsData() bool {
 func (o *Operand) AsData() (Data, error) {
 	val, ok := o.Symbol.(Data)
 	if !ok {
-		return Data(""), errors.NewOperandSymbolError(o.Symbol, Data(""))
+		return Data(""), errs.NewOperandSymbolError(o.Symbol, Data(""))
 	}
 	return val, nil
 }
@@ -67,7 +67,7 @@ func (o *Operand) IsConditon() bool {
 func (o *Operand) AsCondition() (Condition, error) {
 	val, ok := o.Symbol.(Condition)
 	if !ok {
-		return Condition(""), errors.NewOperandSymbolError(o.Symbol, Condition(""))
+		return Condition(""), errs.NewOperandSymbolError(o.Symbol, Condition(""))
 	}
 	return val, nil
 }
