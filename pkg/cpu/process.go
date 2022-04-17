@@ -183,9 +183,10 @@ func (c *CPU) setRotateShiftFlags(result byte, isCarry bool) {
 // NOP: No operation
 func (c *CPU) NOP(ops []instructions.Operand) {}
 
-// STOP: halts CPU and display until button pressed
+// STOP: halts CPU and display until button pressed, changes speed for GBC
 func (c *CPU) STOP(ops []instructions.Operand) {
 	// TODO: figure out how this should actually behave
+	// https://gbdev.io/pandocs/Reducing_Power_Consumption.html?highlight=stop#using-the-stop-instruction
 	panic(errs.NotImplementedError)
 }
 
@@ -210,7 +211,7 @@ func (c *CPU) INC(ops []instructions.Operand) {
 	}
 
 	if ops[0].Is16() && !ops[0].Deref {
-		// if the parametes is 16 bit (and not a dereference)
+		// if the parameter is 16 bit (and not a dereference)
 		// then no flags get set (see instructions 0x03, 0x13, etc)
 		return
 	}
@@ -236,7 +237,7 @@ func (c *CPU) DEC(ops []instructions.Operand) {
 	}
 
 	if ops[0].Is16() && !ops[0].Deref {
-		// if the parametes is 16 bit (and not a dereference)
+		// if the parameter is 16 bit (and not a dereference)
 		// then no flags get set (see instructions 0x0B, 0x1B, etc)
 		return
 	}
