@@ -8,6 +8,7 @@ import (
 	"github.com/robherley/go-gameboy/internal/pretty"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	"github.com/robherley/go-gameboy/pkg/emulator"
+	"github.com/robherley/go-gameboy/pkg/ui"
 )
 
 func main() {
@@ -25,6 +26,15 @@ func main() {
 
 	pretty.Cart(cart)
 
-	emu := emulator.New(cart)
-	emu.Boot()
+	go func() {
+		emu := emulator.New(cart)
+		emu.Boot()
+	}()
+
+	// TODO: maybe wait for sdl window to init first? seems slow
+
+	err = ui.NewSDLWindow()
+	if err != nil {
+		panic(err)
+	}
 }
