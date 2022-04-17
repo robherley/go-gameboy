@@ -48,10 +48,12 @@ func Cart(c *cartridge.Cartridge) {
 	fmt.Println()
 }
 
-func Instruction(pc uint16, opcode byte, in *instructions.Instruction, isCBPrefixed bool) {
+func Instruction(pc uint16, opcode byte, in *instructions.Instruction) {
 	if Hide {
 		return
 	}
+
+	isCBPrefixed := opcode == 0xCB
 
 	pterm.NewStyle(pterm.FgBlack, pterm.BgWhite, pterm.Bold).Printf(" %04x ", pc)
 	pterm.NewStyle(pterm.FgLightCyan, pterm.BgGray, pterm.Bold).Printf(" % -3s (%02x) ", in.Mnemonic, opcode)
@@ -117,7 +119,7 @@ func CPU(c *cpu.CPU) {
 	pterm.FgDarkGray.Printf("  Z: %s · N: %s · H: %s · C: %s\n", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
 }
 
-func Interrupt(it cpu.Interrupt) {
+func Interrupt(it cpu.InterruptType) {
 	if Hide {
 		return
 	}

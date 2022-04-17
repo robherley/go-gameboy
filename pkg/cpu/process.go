@@ -115,7 +115,7 @@ func (c *CPU) valueOf(operand *instructions.Operand) uint16 {
 	case instructions.Register:
 		val := c.Registers.Get(symbol)
 		if operand.Deref {
-			val = uint16(c.Read8(val))
+			val = uint16(c.MMU.Read8(val))
 		}
 		return val
 	case byte:
@@ -132,7 +132,7 @@ func (c *CPU) setRegOrAddr(operand *instructions.Operand, value byte) {
 
 	// set address if deref
 	if operand.Deref {
-		c.Write8(regVal, value)
+		c.MMU.Write8(regVal, value)
 	} else { // otherwise set register
 		c.Registers.Set(reg, uint16(value))
 	}
@@ -191,7 +191,7 @@ func (c *CPU) STOP(ops []instructions.Operand) {
 
 // HALT: power down CPU until an interrupt occurs
 func (c *CPU) HALT(ops []instructions.Operand) {
-	c.IsHalted = true
+	c.Halted = true
 }
 
 // INC: increment register
@@ -201,8 +201,8 @@ func (c *CPU) INC(ops []instructions.Operand) {
 	if ops[0].Deref {
 		// special case for instruction 0x34
 		addr := c.valueOf(&ops[0])
-		result = uint16(c.Read8(addr)) + 1
-		c.Write8(addr, byte(result))
+		result = uint16(c.MMU.Read8(addr)) + 1
+		c.MMU.Write8(addr, byte(result))
 	} else {
 		reg := ops[0].Symbol.(instructions.Register)
 		result = c.Registers.Get(reg) + 1
@@ -227,8 +227,8 @@ func (c *CPU) DEC(ops []instructions.Operand) {
 	if ops[0].Deref {
 		// special case for instruction 0x35
 		addr := c.valueOf(&ops[0])
-		result = uint16(c.Read8(addr)) - 1
-		c.Write8(addr, byte(result))
+		result = uint16(c.MMU.Read8(addr)) - 1
+		c.MMU.Write8(addr, byte(result))
 	} else {
 		reg := ops[0].Symbol.(instructions.Register)
 		result = c.Registers.Get(reg) - 1
@@ -271,20 +271,20 @@ func (c *CPU) RET(ops []instructions.Operand) {
 	c.jumper(instructions.RET, ops)
 }
 
-// RETI: pop two bytes from stack & jump to that address then enable interrupts
+// RETI: pop two bytes from stack & jump to that address then enable interrupts immediately
 func (c *CPU) RETI(ops []instructions.Operand) {
+	c.Interrupt.MasterEnabled = true
 	c.jumper(instructions.RETI, ops)
-	c.IME = true
 }
 
 // DI: disables interrupts
 func (c *CPU) DI(ops []instructions.Operand) {
-	c.IME = false
+	c.Interrupt.DI = MASTER_SET_NEXT
 }
 
-// EI: enables interrupts
+// EI: enables interrupts (with delay)
 func (c *CPU) EI(ops []instructions.Operand) {
-	c.EnablingIME = true
+	c.Interrupt.EI = MASTER_SET_NEXT
 }
 
 // LD: puts values from one operand into another
@@ -317,9 +317,9 @@ func (c *CPU) LD(ops []instructions.Operand) {
 		// if destination is data or dereference, we're writing to the address
 		addr := c.valueOf(dst)
 		if src.Is16() {
-			c.Write16(addr, srcData)
+			c.MMU.Write16(addr, srcData)
 		} else {
-			c.Write8(addr, byte(srcData))
+			c.MMU.Write8(addr, byte(srcData))
 		}
 	} else if dst.IsRegister() {
 		// if register to register, just write to the register
@@ -352,12 +352,12 @@ func (c *CPU) LDH(ops []instructions.Operand) {
 	if first == instructions.A && second == instructions.A8 {
 		// LDH A (a8), alternate mnemonic is LD A,($FF00+a8)
 		a8 := c.valueOf(&ops[1])
-		c.Registers.A = c.Read8(0xFF00 | a8)
+		c.Registers.A = c.MMU.Read8(0xFF00 | a8)
 
 	} else if first == instructions.A8 && second == instructions.A {
 		// LDH (a8) A, alternate mnemonic is LD ($FF00+a8),A
 		a8 := c.valueOf(&ops[0])
-		c.Write8(0xFF00|a8, c.Registers.A)
+		c.MMU.Write8(0xFF00|a8, c.Registers.A)
 	}
 }
 
@@ -651,7 +651,7 @@ func (c *CPU) RES(ops []instructions.Operand) {
 
 	// set address if deref
 	if ops[1].Deref {
-		c.Write8(val, byte(result))
+		c.MMU.Write8(val, byte(result))
 	} else { // otherwise set register
 		reg := ops[1].Symbol.(instructions.Register)
 		c.Registers.Set(reg, uint16(result))
