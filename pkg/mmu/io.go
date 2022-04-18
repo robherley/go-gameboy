@@ -1,9 +1,5 @@
 package mmu
 
-import (
-	errs "github.com/robherley/go-gameboy/pkg/errors"
-)
-
 const (
 	SB_SERIAL_TRANSFER = 0xFF01
 	SC_SERIAL_CONTROL  = 0xFF02
@@ -26,7 +22,8 @@ func (i *io) Read(address uint16) byte {
 	case SC_SERIAL_CONTROL:
 		return i.serialData[1]
 	default:
-		panic(errs.NewReadError(address, "io"))
+		// panic(errs.NewReadError(address, "io"))
+		return 0
 	}
 }
 
@@ -37,6 +34,7 @@ func (i *io) Write(address uint16, data byte) {
 	case SC_SERIAL_CONTROL:
 		i.serialData[1] = data
 	default:
-		panic(errs.NewWriteError(address, "io"))
+		// panic(errs.NewWriteError(address, "io"))
+		return
 	}
 }

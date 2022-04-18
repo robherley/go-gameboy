@@ -49,15 +49,6 @@ func RegistersForDMG(cart *cartridge.Cartridge) *Registers {
 	return r
 }
 
-func TempRegisters(cart *cartridge.Cartridge) *Registers {
-	r := &Registers{
-		A:  0x01,
-		PC: 0x0100,
-	}
-
-	return r
-}
-
 func (registers *Registers) Set(reg instructions.Register, value uint16) {
 	switch reg {
 	case instructions.A:

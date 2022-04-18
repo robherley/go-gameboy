@@ -26,7 +26,7 @@ func New(cart *cartridge.Cartridge) *CPU {
 	}
 
 	return &CPU{
-		Registers: TempRegisters(cart),
+		Registers: RegistersForDMG(cart),
 		MMU:       mmu.New(cart, interrupt),
 		Interrupt: interrupt,
 		Halted:    false,

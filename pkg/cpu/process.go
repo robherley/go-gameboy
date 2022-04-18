@@ -93,6 +93,12 @@ func (c *CPU) Process(in *instructions.Instruction) {
 		proc = c.RRC
 	case instructions.RR:
 		proc = c.RR
+	case instructions.SRA:
+		proc = c.SRA
+	case instructions.SRL:
+		proc = c.SRL
+	case instructions.SWAP:
+		proc = c.SWAP
 	default:
 		panic(errs.NewInvalidMnemonicError(string(in.Mnemonic)))
 	}
@@ -216,7 +222,7 @@ func (c *CPU) INC(ops []instructions.Operand) {
 		return
 	}
 
-	c.Registers.SetFlag(FlagZ, result == 0)
+	c.Registers.SetFlag(FlagZ, (result&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, (result&0xF) == 0)
 }
@@ -242,7 +248,7 @@ func (c *CPU) DEC(ops []instructions.Operand) {
 		return
 	}
 
-	c.Registers.SetFlag(FlagZ, result == 0)
+	c.Registers.SetFlag(FlagZ, (result&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (result&0xF) == 0xF)
 }
@@ -314,8 +320,8 @@ func (c *CPU) LD(ops []instructions.Operand) {
 
 	srcData := c.valueOf(src)
 
-	if dst.IsData() || dst.Deref {
-		// if destination is data or dereference, we're writing to the address
+	if dst.IsData() {
+		// if destination is data we're writing to the address
 		addr := c.valueOf(dst)
 		if src.Is16() {
 			c.MMU.Write16(addr, srcData)
@@ -323,8 +329,19 @@ func (c *CPU) LD(ops []instructions.Operand) {
 			c.MMU.Write8(addr, byte(srcData))
 		}
 	} else if dst.IsRegister() {
-		// if register to register, just write to the register
-		c.Registers.Set(dst.Symbol.(instructions.Register), srcData)
+		reg := dst.Symbol.(instructions.Register)
+		if dst.Deref {
+			// if deref of register, write to the value at register
+			addr := c.Registers.Get(reg)
+			if src.Is16() {
+				c.MMU.Write16(addr, srcData)
+			} else {
+				c.MMU.Write8(addr, byte(srcData))
+			}
+		} else {
+			// if register to register, just write to the register
+			c.Registers.Set(reg, srcData)
+		}
 	}
 
 	// check if any HL+ or HL-, and adjust
@@ -401,7 +418,7 @@ func (c *CPU) ADD(ops []instructions.Operand) {
 		c.Registers.SetFlag(FlagH, (valA&0xFFF)+(valB&0xFFF) > 0xFFF)
 		c.Registers.SetFlag(FlagH, (uint32(valA)&0xFFFF)+(uint32(valB)&0xFFFF) > 0xFFFF)
 	} else { // 8bit add
-		c.Registers.SetFlag(FlagZ, sum == 0)
+		c.Registers.SetFlag(FlagZ, (sum&0xFF) == 0)
 		c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF) > 0xF)
 		c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF) > 0xFF)
 	}
@@ -419,7 +436,7 @@ func (c *CPU) ADC(ops []instructions.Operand) {
 
 	sum := valA + valB + carry
 
-	c.Registers.SetFlag(FlagZ, sum == 0)
+	c.Registers.SetFlag(FlagZ, (sum&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF)+carry > 0xF)
 	c.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF)+carry > 0xFF)
@@ -432,7 +449,7 @@ func (c *CPU) SUB(ops []instructions.Operand) {
 	diff := valA - valB
 
 	c.Registers.Set(instructions.A, diff)
-	c.Registers.SetFlag(FlagZ, diff == 0)
+	c.Registers.SetFlag(FlagZ, (diff&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))
@@ -451,7 +468,7 @@ func (c *CPU) SBC(ops []instructions.Operand) {
 	diff := valA - valB + carry
 
 	c.Registers.Set(instructions.A, diff)
-	c.Registers.SetFlag(FlagZ, diff == 0)
+	c.Registers.SetFlag(FlagZ, (diff&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF)+carry)
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF)+carry)
@@ -497,7 +514,7 @@ func (c *CPU) CP(ops []instructions.Operand) {
 	diff := valA - valB
 
 	c.Registers.Set(instructions.A, diff)
-	c.Registers.SetFlag(FlagZ, diff == 0)
+	c.Registers.SetFlag(FlagZ, (diff&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
 	c.Registers.SetFlag(FlagC, (valA&0xFF) < (valB&0xFF))

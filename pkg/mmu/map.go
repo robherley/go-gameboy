@@ -53,7 +53,7 @@ func (mmu *MMU) readWriterFor(address uint16) readWriter {
 	} else if address <= RES_UNUSE_END {
 		panic(errs.NewAccessError(address, "reserved unused memory"))
 	} else if address <= IO_REG_END {
-		return nil
+		return mmu.io
 	} else if address <= HRAM_END {
 		return mmu.hram
 	} else if address == IN_ENABLE_REG {
