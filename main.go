@@ -17,6 +17,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println("hello?")
+
 	pretty.Title()
 
 	cart, err := cartridge.FromFile(os.Args[1])

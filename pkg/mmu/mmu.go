@@ -51,10 +51,6 @@ func (mmu *MMU) Write8(address uint16, data byte) {
 		return
 	}
 
-	if address >= 0xC000 && address <= 0xDFFF {
-		fmt.Printf("⭕ writing to WRAM address 0x%04x ", address)
-	}
-
 	rw.Write(address, data)
 }
 
@@ -71,10 +67,7 @@ func (mmu *MMU) DebugSerial() {
 		mmu.io.Write(SC_SERIAL_CONTROL, 0)
 	}
 
-	data := "<empty>"
 	if len(mmu.debug) != 0 {
-		data = string(mmu.debug)
+		fmt.Printf("DBG: %s\n", mmu.debug)
 	}
-
-	fmt.Println("Serial:", data)
 }

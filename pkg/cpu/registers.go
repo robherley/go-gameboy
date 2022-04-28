@@ -123,14 +123,14 @@ func (registers *Registers) Get(reg instructions.Register) uint16 {
 	Registers can be accessed as one 16 bit register OR separate 8 bit
 
 	|16|Hi|Lo|
-	|AF|A |F |
+	|AF|A |- |
 	|BC|B |C |
 	|DE|D |E |
 	|HL|H |L |
 */
 
 func (r *Registers) GetAF() uint16 {
-	return bits.To16(r.A, r.F)
+	return bits.To16(r.A, 0x0)
 }
 
 func (r *Registers) SetAF(value uint16) {

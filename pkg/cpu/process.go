@@ -513,7 +513,6 @@ func (c *CPU) CP(ops []instructions.Operand) {
 	valB := c.valueOf(&ops[0])
 	diff := valA - valB
 
-	c.Registers.Set(instructions.A, diff)
 	c.Registers.SetFlag(FlagZ, (diff&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, true)
 	c.Registers.SetFlag(FlagH, (valA&0xF) < (valB&0xF))
