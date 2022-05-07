@@ -4,7 +4,6 @@ import (
 	"github.com/robherley/go-gameboy/internal/bits"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	errs "github.com/robherley/go-gameboy/pkg/errors"
-	"github.com/robherley/go-gameboy/pkg/instructions"
 	"github.com/robherley/go-gameboy/pkg/mmu"
 )
 
@@ -72,7 +71,7 @@ func (c *CPU) StackPop16() uint16 {
 	return bits.To16(hi, lo)
 }
 
-func (c *CPU) NextInstruction() (byte, *instructions.Instruction, bool) {
+func (c *CPU) NextInstruction() (byte, *Instruction, bool) {
 	opcode := c.Fetch8()
 	isCBPrexied := opcode == 0xCB
 	if isCBPrexied {
@@ -80,7 +79,7 @@ func (c *CPU) NextInstruction() (byte, *instructions.Instruction, bool) {
 		opcode = c.Fetch8()
 	}
 
-	instruction := instructions.FromOPCode(opcode, isCBPrexied)
+	instruction := FromOPCode(opcode, isCBPrexied)
 	if instruction == nil {
 		panic(errs.NewUnknownOPCodeError(opcode))
 	}

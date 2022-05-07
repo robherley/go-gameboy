@@ -1,4 +1,4 @@
-package instructions
+package cpu
 
 // https://gbdev.io/pandocs/CPU_Instruction_Set.html
 // https://gbdev.io/gb-opcodes/optables/

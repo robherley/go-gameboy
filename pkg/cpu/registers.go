@@ -4,7 +4,6 @@ import (
 	"github.com/robherley/go-gameboy/internal/bits"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	errs "github.com/robherley/go-gameboy/pkg/errors"
-	"github.com/robherley/go-gameboy/pkg/instructions"
 )
 
 // https://gbdev.io/pandocs/CPU_Registers_and_Flags.html#registers
@@ -49,70 +48,70 @@ func RegistersForDMG(cart *cartridge.Cartridge) *Registers {
 	return r
 }
 
-func (registers *Registers) Set(reg instructions.Register, value uint16) {
+func (registers *Registers) Set(reg Register, value uint16) {
 	switch reg {
-	case instructions.A:
+	case A:
 		registers.A = byte(value)
-	case instructions.B:
+	case B:
 		registers.B = byte(value)
-	case instructions.C:
+	case C:
 		registers.C = byte(value)
-	case instructions.D:
+	case D:
 		registers.D = byte(value)
-	case instructions.E:
+	case E:
 		registers.E = byte(value)
-	case instructions.F:
+	case F:
 		registers.F = byte(value)
-	case instructions.H:
+	case H:
 		registers.H = byte(value)
-	case instructions.L:
+	case L:
 		registers.L = byte(value)
-	case instructions.SP:
+	case SP:
 		registers.SP = value
-	case instructions.PC:
+	case PC:
 		registers.PC = value
-	case instructions.AF:
+	case AF:
 		registers.SetAF(value)
-	case instructions.BC:
+	case BC:
 		registers.SetBC(value)
-	case instructions.DE:
+	case DE:
 		registers.SetDE(value)
-	case instructions.HL:
+	case HL:
 		registers.SetHL(value)
 	default:
 		panic(errs.NewInvalidOperandError(reg))
 	}
 }
 
-func (registers *Registers) Get(reg instructions.Register) uint16 {
+func (registers *Registers) Get(reg Register) uint16 {
 	switch reg {
-	case instructions.A:
+	case A:
 		return uint16(registers.A)
-	case instructions.B:
+	case B:
 		return uint16(registers.B)
-	case instructions.C:
+	case C:
 		return uint16(registers.C)
-	case instructions.D:
+	case D:
 		return uint16(registers.D)
-	case instructions.E:
+	case E:
 		return uint16(registers.E)
-	case instructions.F:
+	case F:
 		return uint16(registers.F)
-	case instructions.H:
+	case H:
 		return uint16(registers.H)
-	case instructions.L:
+	case L:
 		return uint16(registers.L)
-	case instructions.SP:
+	case SP:
 		return registers.SP
-	case instructions.PC:
+	case PC:
 		return registers.PC
-	case instructions.AF:
+	case AF:
 		return registers.GetAF()
-	case instructions.BC:
+	case BC:
 		return registers.GetBC()
-	case instructions.DE:
+	case DE:
 		return registers.GetDE()
-	case instructions.HL:
+	case HL:
 		return registers.GetHL()
 	default:
 		panic(errs.NewInvalidOperandError(reg))
@@ -189,15 +188,15 @@ const (
 )
 
 // If a condition is true or false based on register flags
-func (r *Registers) IsCondition(cond instructions.Condition) bool {
+func (r *Registers) IsCondition(cond Condition) bool {
 	switch cond {
-	case instructions.NZ:
+	case NZ:
 		return !r.GetFlag(FlagZ)
-	case instructions.Z:
+	case Z:
 		return r.GetFlag(FlagZ)
-	case instructions.NC:
+	case NC:
 		return !r.GetFlag(FlagC)
-	case instructions.Ca:
+	case Ca:
 		return r.GetFlag(FlagC)
 	default:
 		panic(errs.NewInvalidOperandError(cond))

@@ -6,7 +6,6 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	"github.com/robherley/go-gameboy/pkg/cpu"
-	"github.com/robherley/go-gameboy/pkg/instructions"
 )
 
 var Hide = false
@@ -48,7 +47,7 @@ func Cart(c *cartridge.Cartridge) {
 	fmt.Println()
 }
 
-func Instruction(pc, sp uint16, opcode byte, in *instructions.Instruction) {
+func Instruction(pc, sp uint16, opcode byte, in *cpu.Instruction) {
 	if Hide {
 		return
 	}

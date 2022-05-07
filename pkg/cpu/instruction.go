@@ -1,4 +1,4 @@
-package instructions
+package cpu
 
 type Instruction struct {
 	Mnemonic
