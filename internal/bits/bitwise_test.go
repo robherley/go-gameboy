@@ -1,10 +1,10 @@
 package bits_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/robherley/go-gameboy/internal/bits"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLo(t *testing.T) {
@@ -21,12 +21,8 @@ func TestLo(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("Lo=0x%x", tc.input), func(tt *testing.T) {
-			actual := bits.Lo(tc.input)
-			if actual != tc.expected {
-				t.Fatalf("got: %x, want: %x", actual, tc.expected)
-			}
-		})
+		actual := bits.Lo(tc.input)
+		assert.Equal(t, tc.expected, actual)
 	}
 }
 
@@ -44,12 +40,8 @@ func TestHi(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("Hi=0x%x", tc.input), func(tt *testing.T) {
-			actual := bits.Hi(tc.input)
-			if actual != tc.expected {
-				t.Fatalf("got: %x, want: %x", actual, tc.expected)
-			}
-		})
+		actual := bits.Hi(tc.input)
+		assert.Equal(t, tc.expected, actual)
 	}
 }
 
@@ -67,12 +59,8 @@ func TestTo16(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("To16=0x%x,0x%x", tc.hi, tc.lo), func(tt *testing.T) {
-			actual := bits.To16(tc.hi, tc.lo)
-			if actual != tc.expected {
-				t.Fatalf("got: %x, want: %x", actual, tc.expected)
-			}
-		})
+		actual := bits.To16(tc.hi, tc.lo)
+		assert.Equal(t, tc.expected, actual)
 	}
 }
 
@@ -89,12 +77,8 @@ func TestGetNBit(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("GetNBit=%d,0b%b", tc.num, tc.bit), func(tt *testing.T) {
-			actual := bits.GetNBit(tc.num, tc.bit)
-			if actual != tc.expected {
-				t.Fatalf("got: %v, want: %v", actual, tc.expected)
-			}
-		})
+		actual := bits.GetNBit(tc.num, tc.bit)
+		assert.Equal(t, tc.expected, actual)
 	}
 }
 
@@ -110,12 +94,8 @@ func TestSetNBit(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("SetNBit=%d,0b%b", tc.num, tc.bit), func(tt *testing.T) {
-			actual := bits.SetNBit(tc.num, tc.bit)
-			if actual != tc.expected {
-				t.Fatalf("got: 0b%08b, want: 0b%08b", actual, tc.expected)
-			}
-		})
+		actual := bits.SetNBit(tc.num, tc.bit)
+		assert.Equal(t, tc.expected, actual)
 	}
 }
 
@@ -131,11 +111,7 @@ func TestClearNBit(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("ClearNBit=%d,0b%b", tc.num, tc.bit), func(tt *testing.T) {
-			actual := bits.ClearNBit(tc.num, tc.bit)
-			if actual != tc.expected {
-				t.Fatalf("got: 0b%08b, want: 0b%08b", actual, tc.expected)
-			}
-		})
+		actual := bits.ClearNBit(tc.num, tc.bit)
+		assert.Equal(t, tc.expected, actual)
 	}
 }
