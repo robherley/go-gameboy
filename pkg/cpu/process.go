@@ -146,6 +146,15 @@ func (c *CPU) setRegOrAddr(operand *instructions.Operand, value byte) {
 
 // jumper: helper for jump operations (JP, JR, CALL, RST, etc)
 func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand) {
+	// case for RET, if it just has a condition we want to back out early
+	if len(ops) == 1 && ops[0].IsConditon() {
+		condition := ops[0].Symbol.(instructions.Condition)
+		if !c.Registers.IsCondition(condition) {
+			// condition did not pass, so just return
+			return
+		}
+	}
+
 	var addr uint16
 	switch mnemonic {
 	case instructions.RET, instructions.RETI:
@@ -153,8 +162,8 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 		addr = c.StackPop16()
 	case instructions.JR:
 		// relative jump, add to PC
-		val := c.valueOf(&ops[len(ops)-1])
-		addr = c.Registers.PC + val
+		rel := c.valueOf(&ops[len(ops)-1])
+		addr = c.Registers.PC + rel
 	default:
 		// otherwise get jump value from last operand
 		addr = c.valueOf(&ops[len(ops)-1])
@@ -162,7 +171,8 @@ func (c *CPU) jumper(mnemonic instructions.Mnemonic, ops []instructions.Operand)
 
 	// check if has conditional
 	// note: important to do this _after_ parameter read so PC is correct
-	if len(ops) > 1 {
+	if len(ops) > 0 && ops[0].IsConditon() {
+		// fmt.Println(mnemonic, ops[0].Symbol)
 		condition := ops[0].Symbol.(instructions.Condition)
 		if !c.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
@@ -436,6 +446,7 @@ func (c *CPU) ADC(ops []instructions.Operand) {
 
 	sum := valA + valB + carry
 
+	c.Registers.Set(instructions.A, sum)
 	c.Registers.SetFlag(FlagZ, (sum&0xFF) == 0)
 	c.Registers.SetFlag(FlagN, false)
 	c.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF)+carry > 0xF)

@@ -72,7 +72,7 @@ func (c *CPU) StackPop16() uint16 {
 	return bits.To16(hi, lo)
 }
 
-func (c *CPU) NextInstruction() (byte, *instructions.Instruction) {
+func (c *CPU) NextInstruction() (byte, *instructions.Instruction, bool) {
 	opcode := c.Fetch8()
 	isCBPrexied := opcode == 0xCB
 	if isCBPrexied {
@@ -85,7 +85,7 @@ func (c *CPU) NextInstruction() (byte, *instructions.Instruction) {
 		panic(errs.NewUnknownOPCodeError(opcode))
 	}
 
-	return opcode, instruction
+	return opcode, instruction, isCBPrexied
 }
 
 func (c *CPU) HandleInterrupts() {

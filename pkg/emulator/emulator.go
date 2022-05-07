@@ -1,6 +1,8 @@
 package emulator
 
 import (
+	"fmt"
+
 	"github.com/robherley/go-gameboy/internal/pretty"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	"github.com/robherley/go-gameboy/pkg/cpu"
@@ -26,15 +28,21 @@ func (emu *Emulator) Boot() {
 }
 
 func (emu *Emulator) Step() {
-	pretty.Hide = true
-
 	currentPC := emu.CPU.Registers.PC
 	currentSP := emu.CPU.Registers.SP
 
+	pretty.Hide = true
+
 	if !emu.CPU.Halted {
-		opcode, instruction := emu.CPU.NextInstruction()
+		opcode, instruction, cb := emu.CPU.NextInstruction()
+		mnem := instruction.Mnemonic
+		if cb {
+			mnem = "CB"
+		}
+		fmt.Printf("%04X %s - %04X \n", currentPC, mnem, opcode)
 		pretty.Instruction(currentPC, currentSP, opcode, instruction)
 		pretty.CPU(emu.CPU)
+		fmt.Println()
 		emu.CPU.MMU.DebugSerial()
 		emu.CPU.Process(instruction)
 	} else {
