@@ -1,9 +1,5 @@
 package cpu
 
-import (
-	errs "github.com/robherley/go-gameboy/pkg/errors"
-)
-
 type Operand struct {
 	// Symbol defines what kind of operand, and where to resolve the data
 	Symbol Symbol
@@ -38,36 +34,12 @@ func (o *Operand) IsRegister() bool {
 	return ok
 }
 
-func (o *Operand) AsRegister() (Register, error) {
-	val, ok := o.Symbol.(Register)
-	if !ok {
-		return Register(""), errs.NewOperandSymbolError(o.Symbol, Register(""))
-	}
-	return val, nil
-}
-
 func (o *Operand) IsData() bool {
 	_, ok := o.Symbol.(Data)
 	return ok
 }
 
-func (o *Operand) AsData() (Data, error) {
-	val, ok := o.Symbol.(Data)
-	if !ok {
-		return Data(""), errs.NewOperandSymbolError(o.Symbol, Data(""))
-	}
-	return val, nil
-}
-
 func (o *Operand) IsConditon() bool {
 	_, ok := o.Symbol.(Condition)
 	return ok
-}
-
-func (o *Operand) AsCondition() (Condition, error) {
-	val, ok := o.Symbol.(Condition)
-	if !ok {
-		return Condition(""), errs.NewOperandSymbolError(o.Symbol, Condition(""))
-	}
-	return val, nil
 }

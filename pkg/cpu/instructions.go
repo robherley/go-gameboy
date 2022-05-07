@@ -5,7 +5,12 @@ package cpu
 // instructions generated from: https://gbdev.io/gb-opcodes/Opcodes.json
 // script: https://gist.github.com/robherley/836369cbd8eb73a286d017626b8376c1
 
-func FromOPCode(code byte, cbprefix bool) *Instruction {
+type Instruction struct {
+	Operation
+	Operands []Operand
+}
+
+func InstructionFromOPCode(code byte, cbprefix bool) *Instruction {
 	var mapping map[byte]Instruction
 	if cbprefix {
 		mapping = cbprefixed
@@ -1643,6 +1648,7 @@ var unprefixed = map[byte]Instruction{
 		},
 	},
 }
+
 var cbprefixed = map[byte]Instruction{
 	0x00: {
 		RLC,

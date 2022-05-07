@@ -10,11 +10,16 @@ var (
 	InvalidMnemonicError    = errors.New("invalid mnemonic")
 	InvalidOperandError     = errors.New("invalid operand")
 	InvalidInstructionError = errors.New("invalid instruction")
+	IllegalInstructionError = errors.New("illegal instruction")
 	NotImplementedError     = errors.New("not implemented")
 )
 
 func NewInvalidOperandError(operand any) error {
 	return fmt.Errorf("%w: %v (%T)", InvalidOperandError, operand, operand)
+}
+
+func NewIllegalInstructionError(opcode byte) error {
+	return fmt.Errorf("%w: 0x%X", IllegalInstructionError, opcode)
 }
 
 func NewOperandSymbolError(got, want any) error {

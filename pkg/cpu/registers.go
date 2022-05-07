@@ -214,3 +214,11 @@ func (r *Registers) SetFlag(f Flag, set bool) {
 		r.F = bits.ClearNBit(r.F, f)
 	}
 }
+
+// SetRotateAndShiftFlags: helper to set flags for rotate/shift funcs
+func (r *Registers) SetRotateAndShiftFlags(result byte, isCarry bool) {
+	r.SetFlag(FlagZ, result == 0)
+	r.SetFlag(FlagN, false)
+	r.SetFlag(FlagH, false)
+	r.SetFlag(FlagC, isCarry)
+}

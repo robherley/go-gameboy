@@ -32,96 +32,164 @@ func New(cart *cartridge.Cartridge) *CPU {
 	}
 }
 
-func (c *CPU) Fetch8() byte {
+func (cpu *CPU) Fetch8() byte {
 	defer func() {
-		c.Registers.PC++
+		cpu.Registers.PC++
 	}()
 
-	return c.MMU.Read8(c.Registers.PC)
+	return cpu.MMU.Read8(cpu.Registers.PC)
 }
 
-func (c *CPU) Fetch16() uint16 {
+func (cpu *CPU) Fetch16() uint16 {
 	defer func() {
-		c.Registers.PC += 2
+		cpu.Registers.PC += 2
 	}()
 
-	return c.MMU.Read16(c.Registers.PC)
+	return cpu.MMU.Read16(cpu.Registers.PC)
 }
 
-func (c *CPU) StackPush8(data byte) {
-	c.Registers.SP--
-	c.MMU.Write8(c.Registers.SP, data)
+func (cpu *CPU) StackPush8(data byte) {
+	cpu.Registers.SP--
+	cpu.MMU.Write8(cpu.Registers.SP, data)
 }
 
-func (c *CPU) StackPush16(data uint16) {
-	c.StackPush8(bits.Hi(data))
-	c.StackPush8(bits.Lo(data))
+func (cpu *CPU) StackPush16(data uint16) {
+	cpu.StackPush8(bits.Hi(data))
+	cpu.StackPush8(bits.Lo(data))
 }
 
-func (c *CPU) StackPop8() byte {
-	val := c.MMU.Read8(c.Registers.SP)
-	c.Registers.SP++
+func (cpu *CPU) StackPop8() byte {
+	val := cpu.MMU.Read8(cpu.Registers.SP)
+	cpu.Registers.SP++
 	return val
 }
 
-func (c *CPU) StackPop16() uint16 {
-	lo := c.StackPop8()
-	hi := c.StackPop8()
+func (cpu *CPU) StackPop16() uint16 {
+	lo := cpu.StackPop8()
+	hi := cpu.StackPop8()
 
 	return bits.To16(hi, lo)
 }
 
-func (c *CPU) NextInstruction() (byte, *Instruction, bool) {
-	opcode := c.Fetch8()
-	isCBPrexied := opcode == 0xCB
-	if isCBPrexied {
+func (cpu *CPU) NextInstruction() (byte, *Instruction) {
+	opcode := cpu.Fetch8()
+	isCB := opcode == 0xCB
+	if isCB {
 		// cb-prefixed instructions have opcode on next fetch
-		opcode = c.Fetch8()
+		opcode = cpu.Fetch8()
 	}
 
-	instruction := FromOPCode(opcode, isCBPrexied)
+	instruction := InstructionFromOPCode(opcode, isCB)
 	if instruction == nil {
 		panic(errs.NewUnknownOPCodeError(opcode))
 	}
 
-	return opcode, instruction, isCBPrexied
+	return opcode, instruction
 }
 
-func (c *CPU) HandleInterrupts() {
-	if c.Interrupt.EI != MASTER_SET_NONE {
-		if c.Interrupt.EI == MASTER_SET_NOW {
-			c.Interrupt.MasterEnabled = true
+// Get will resolve the value of a symbol from the CPU
+// Useable for Data, Register, and byte symbols only
+func (cpu *CPU) Get(operand *Operand) uint16 {
+	switch symbol := (operand).Symbol.(type) {
+	case Data:
+		if operand.Is16() {
+			val := cpu.Fetch16()
+			if operand.Deref {
+				val = cpu.MMU.Read16(val)
+			}
+			return val
+		} else {
+			val := cpu.Fetch8()
+			if operand.Symbol == R8 {
+				// R8 is signed, convert it to int8 first
+				return uint16(int8(val))
+			}
+			if operand.Symbol == A8 {
+				// A8 is always a deref, and only used in LDH
+				// alternative symbol is ($FF00+a8)
+				return 0xFF00 | uint16(val)
+			}
+			// no other deref cases for 8-bit beside A8
+			return uint16(val)
 		}
-		c.Interrupt.EI--
+	case Register:
+		val := cpu.Registers.Get(symbol)
+		if operand.Deref {
+			val = uint16(cpu.MMU.Read8(val))
+		}
+		return val
+	case byte:
+		return uint16(symbol)
+	default:
+		panic(errs.NewInvalidOperandError(symbol))
+	}
+}
+
+// Set will assign the value held at symbol to a new value
+// Usable for Data and Register symbols only
+func (cpu *CPU) Set(operand *Operand, val uint16) {
+	is16 := 0xFF00&val != 0
+
+	switch symbol := (operand).Symbol.(type) {
+	case Data:
+		addr := cpu.Get(operand)
+		if is16 {
+			cpu.MMU.Write16(addr, val)
+		} else {
+			cpu.MMU.Write8(addr, byte(val))
+		}
+	case Register:
+		if operand.Deref {
+			addr := cpu.Registers.Get(symbol)
+			if is16 {
+				cpu.MMU.Write16(addr, val)
+			} else {
+				cpu.MMU.Write8(addr, byte(val))
+			}
+		} else {
+			cpu.Registers.Set(symbol, val)
+		}
+	default:
+		panic(errs.NewInvalidOperandError(symbol))
+	}
+}
+
+func (cpu *CPU) HandleInterrupts() {
+	// check if master flag should be enabled this cycle
+	if cpu.Interrupt.EI != MASTER_SET_NONE {
+		if cpu.Interrupt.EI == MASTER_SET_NOW {
+			cpu.Interrupt.MasterEnabled = true
+		}
+		cpu.Interrupt.EI--
 	}
 
-	if c.Interrupt.DI != MASTER_SET_NONE {
-		if c.Interrupt.DI == MASTER_SET_NOW {
-			c.Interrupt.MasterEnabled = true
+	// check if master flag should be disabled this cycle
+	if cpu.Interrupt.DI != MASTER_SET_NONE {
+		if cpu.Interrupt.DI == MASTER_SET_NOW {
+			cpu.Interrupt.MasterEnabled = true
 		}
-		c.Interrupt.DI--
+		cpu.Interrupt.DI--
 	}
 
-	if !c.Interrupt.MasterEnabled {
+	if !cpu.Interrupt.MasterEnabled {
 		return
 	}
 
-	for i := range interrupts {
-		it := interrupts[i]
-		addr := interruptsToAddress[it]
+	for _, interrupt := range interrupts {
+		addr := interruptsToAddress[interrupt]
 
 		// only handle if *both* interrupt enable and interrupt flag are set
-		if c.Interrupt.IsFlagged(it) && c.Interrupt.IsEnabled(it) {
+		if cpu.Interrupt.IsFlagged(interrupt) && cpu.Interrupt.IsEnabled(interrupt) {
 			// 1. push program counter to stack
-			c.StackPush16(c.Registers.PC)
+			cpu.StackPush16(cpu.Registers.PC)
 			// 2. set program counter to mapped interrupt address
-			c.Registers.PC = addr
+			cpu.Registers.PC = addr
 			// 3. clear interrupt flag
-			c.Interrupt.flag &= ^byte(it)
+			cpu.Interrupt.flag &= ^byte(interrupt)
 			// 4. unhalt cpu
-			c.Halted = false
+			cpu.Halted = false
 			// 5. disable all interrupts
-			c.Interrupt.MasterEnabled = false
+			cpu.Interrupt.MasterEnabled = false
 
 			// only handle one interrupt at a time, priority is based on bit order
 			return
