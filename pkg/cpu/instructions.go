@@ -1322,7 +1322,7 @@ var unprefixed = map[byte]Instruction{
 	0xC7: {
 		RST,
 		[]Operand{
-			{Symbol: 0x00},
+			{Symbol: byte(0x00)},
 		},
 	},
 	0xC8: {
@@ -1369,7 +1369,7 @@ var unprefixed = map[byte]Instruction{
 	0xCF: {
 		RST,
 		[]Operand{
-			{Symbol: 0x08},
+			{Symbol: byte(0x08)},
 		},
 	},
 	0xD0: {
@@ -1417,7 +1417,7 @@ var unprefixed = map[byte]Instruction{
 	0xD7: {
 		RST,
 		[]Operand{
-			{Symbol: 0x10},
+			{Symbol: byte(0x10)},
 		},
 	},
 	0xD8: {
@@ -1462,7 +1462,7 @@ var unprefixed = map[byte]Instruction{
 	0xDF: {
 		RST,
 		[]Operand{
-			{Symbol: 0x18},
+			{Symbol: byte(0x18)},
 		},
 	},
 	0xE0: {
@@ -1508,7 +1508,7 @@ var unprefixed = map[byte]Instruction{
 	0xE7: {
 		RST,
 		[]Operand{
-			{Symbol: 0x20},
+			{Symbol: byte(0x20)},
 		},
 	},
 	0xE8: {
@@ -1552,7 +1552,7 @@ var unprefixed = map[byte]Instruction{
 	0xEF: {
 		RST,
 		[]Operand{
-			{Symbol: 0x28},
+			{Symbol: byte(0x28)},
 		},
 	},
 	0xF0: {
@@ -1598,7 +1598,7 @@ var unprefixed = map[byte]Instruction{
 	0xF7: {
 		RST,
 		[]Operand{
-			{Symbol: 0x30},
+			{Symbol: byte(0x30)},
 		},
 	},
 	0xF8: {
@@ -1644,7 +1644,7 @@ var unprefixed = map[byte]Instruction{
 	0xFF: {
 		RST,
 		[]Operand{
-			{Symbol: 0x38},
+			{Symbol: byte(0x38)},
 		},
 	},
 }

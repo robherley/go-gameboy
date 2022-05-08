@@ -78,7 +78,7 @@ func (i *Interrupt) Read(address uint16) byte {
 	return i.enable
 }
 
-func (i *Interrupt) Requested() bool {
+func (i *Interrupt) IsRequested() bool {
 	return i.flag != 0
 }
 

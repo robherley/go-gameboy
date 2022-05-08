@@ -1,9 +1,7 @@
 package emulator
 
 import (
-	"fmt"
-
-	"github.com/robherley/go-gameboy/internal/pretty"
+	"github.com/robherley/go-gameboy/internal/debug"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	"github.com/robherley/go-gameboy/pkg/cpu"
 )
@@ -19,7 +17,7 @@ func New(cart *cartridge.Cartridge) *Emulator {
 }
 
 func (emu *Emulator) Boot() {
-	pretty.CPU(emu.CPU)
+	debug.CPU(emu.CPU)
 
 	for {
 		emu.Step()
@@ -31,23 +29,15 @@ func (emu *Emulator) Step() {
 	currentPC := emu.CPU.Registers.PC
 	currentSP := emu.CPU.Registers.SP
 
-	pretty.Hide = true
-
 	if !emu.CPU.Halted {
-		opcode, instruction, cb := emu.CPU.NextInstruction()
-		mnem := instruction.Mnemonic
-		if cb {
-			mnem = "CB"
-		}
-		fmt.Printf("%04X %s - %04X \n", currentPC, mnem, opcode)
-		pretty.Instruction(currentPC, currentSP, opcode, instruction)
-		pretty.CPU(emu.CPU)
-		fmt.Println()
+		opcode, instruction := emu.CPU.NextInstruction()
+		debug.Instruction(currentPC, currentSP, opcode, instruction)
+		debug.CPU(emu.CPU)
 		emu.CPU.MMU.DebugSerial()
-		emu.CPU.Process(instruction)
+		instruction.Operation(emu.CPU, instruction.Operands)
 	} else {
 		// interrupt was requested
-		if emu.CPU.Interrupt.Requested() {
+		if emu.CPU.Interrupt.IsRequested() {
 			emu.CPU.Halted = false
 		}
 	}

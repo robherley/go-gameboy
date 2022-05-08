@@ -127,21 +127,15 @@ func RST(cpu *CPU, ops []Operand) {
 	last := ops[len(ops)-1]
 	addr := cpu.Get(&last)
 
-	if condition, ok := ops[0].Symbol.(Condition); ok {
-		if !cpu.Registers.IsCondition(condition) {
-			// condition did not pass, so just return
-			return
-		}
-	}
-
 	cpu.StackPush16(cpu.Registers.PC)
 	cpu.Registers.PC = addr
 }
 
 // RET: pop two bytes from stack & jump to that address (and check condition)
 func RET(cpu *CPU, ops []Operand) {
-	if condition, ok := ops[0].Symbol.(Condition); ok {
-		if !cpu.Registers.IsCondition(condition) {
+	if len(ops) > 0 {
+		condition, ok := ops[0].Symbol.(Condition)
+		if ok && !cpu.Registers.IsCondition(condition) {
 			// condition did not pass, so just return
 			return
 		}
@@ -193,30 +187,7 @@ func LD(cpu *CPU, ops []Operand) {
 	src := &ops[1]
 
 	srcData := cpu.Get(src)
-
-	if dst.IsData() {
-		// if destination is data we're writing to the address
-		addr := cpu.Get(dst)
-		if src.Is16() {
-			cpu.MMU.Write16(addr, srcData)
-		} else {
-			cpu.MMU.Write8(addr, byte(srcData))
-		}
-	} else if dst.IsRegister() {
-		reg := dst.Symbol.(Register)
-		if dst.Deref {
-			// if deref of register, write to the value at register
-			addr := cpu.Registers.Get(reg)
-			if src.Is16() {
-				cpu.MMU.Write16(addr, srcData)
-			} else {
-				cpu.MMU.Write8(addr, byte(srcData))
-			}
-		} else {
-			// if register to register, just write to the register
-			cpu.Registers.Set(reg, srcData)
-		}
-	}
+	cpu.Set(dst, srcData)
 
 	// check if any HL+ or HL-, and adjust
 	for i := range ops {
