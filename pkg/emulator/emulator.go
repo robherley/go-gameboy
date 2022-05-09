@@ -17,8 +17,6 @@ func New(cart *cartridge.Cartridge) *Emulator {
 }
 
 func (emu *Emulator) Boot() {
-	debug.CPU(emu.CPU)
-
 	for {
 		emu.Step()
 		// TODO: clock

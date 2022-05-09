@@ -209,32 +209,18 @@ func LD(cpu *CPU, ops []Operand) {
 
 // LDH: loads/sets A from 8-bit signed data
 func LDH(cpu *CPU, ops []Operand) {
-	first := ops[0].Symbol
-	second := ops[1].Symbol
+	dst := ops[0]
+	src := ops[1]
 
-	if first == A && second == A8 {
-		// LDH A (a8), alternate mnemonic is LD A,($FF00+a8)
-		a8 := cpu.Get(&ops[1])
-		cpu.Registers.A = cpu.MMU.Read8(0xFF00 | a8)
-
-	} else if first == A8 && second == A {
-		// LDH (a8) A, alternate mnemonic is LD ($FF00+a8),A
-		a8 := cpu.Get(&ops[0])
-		cpu.MMU.Write8(0xFF00|a8, cpu.Registers.A)
-	}
+	srcData := cpu.Get(&src)
+	cpu.Set(&dst, srcData)
 }
 
 // POP: pops a two byte value off the stack
 func POP(cpu *CPU, ops []Operand) {
+	reg := ops[0].Symbol.(Register)
 	val := cpu.StackPop16()
-
-	// special case for AF, protect last nibble for flags
-	if ops[0].Symbol == AF {
-		cpu.Registers.SetAF(val & 0xFFF0)
-	} else {
-		reg := ops[0].Symbol.(Register)
-		cpu.Registers.Set(reg, val)
-	}
+	cpu.Registers.Set(reg, val)
 }
 
 // PUSH: pushes a two byte value on the stack
@@ -261,7 +247,7 @@ func ADD(cpu *CPU, ops []Operand) {
 		cpu.Registers.SetFlag(FlagC, (valA&0xFF)+(valB&0xFF) > 0xFF)
 	} else if ops[0].Is16() { // 16bit add
 		cpu.Registers.SetFlag(FlagH, (valA&0xFFF)+(valB&0xFFF) > 0xFFF)
-		cpu.Registers.SetFlag(FlagH, (uint32(valA)&0xFFFF)+(uint32(valB)&0xFFFF) > 0xFFFF)
+		cpu.Registers.SetFlag(FlagC, (uint32(valA)&0xFFFF)+(uint32(valB)&0xFFFF) > 0xFFFF)
 	} else { // 8bit add
 		cpu.Registers.SetFlag(FlagZ, (sum&0xFF) == 0)
 		cpu.Registers.SetFlag(FlagH, (valA&0xF)+(valB&0xF) > 0xF)

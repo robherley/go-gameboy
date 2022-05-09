@@ -48,10 +48,6 @@ func CPU(c *cpu.CPU) {
 		return
 	}
 
-	r8 := func(b byte) string {
-		return fmt.Sprintf("%02x", b)
-	}
-
 	flagStr := func(f cpu.Flag) string {
 		if c.Registers.GetFlag(f) {
 			return "1"
@@ -60,7 +56,7 @@ func CPU(c *cpu.CPU) {
 		}
 	}
 
-	fmt.Printf(" | AF: %s%s BC: %s%s DE: %s%s HL: %s%s ", r8(c.Registers.A), r8(c.Registers.F), r8(c.Registers.B), r8(c.Registers.C), r8(c.Registers.D), r8(c.Registers.E), r8(c.Registers.H), r8(c.Registers.L))
+	fmt.Printf(" | AF: %02X%02X BC: %02X%02X DE: %02X%02X HL: %02X%02X ", c.Registers.A, c.Registers.F, c.Registers.B, c.Registers.C, c.Registers.D, c.Registers.E, c.Registers.H, c.Registers.L)
 	fmt.Printf("| ZNHC: %s%s%s%s", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
 
 	fmt.Println()
@@ -79,7 +75,9 @@ func Instruction(pc, sp uint16, opcode byte, in *cpu.Instruction) {
 		return
 	}
 
-	fmt.Printf("%04X - %04X: [%02X]", pc, sp, opcode)
+	fmt.Printf("%04X - %04X: [%02X]", sp, pc, opcode)
+
+	return
 	instructionStr := fmt.Sprintf("%s ", operationName(in.Operation))
 
 	if in.Operands != nil {

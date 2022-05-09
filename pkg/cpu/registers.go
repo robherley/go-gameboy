@@ -48,36 +48,36 @@ func RegistersForDMG(cart *cartridge.Cartridge) *Registers {
 	return r
 }
 
-func (registers *Registers) Set(reg Register, value uint16) {
+func (registers *Registers) Set(reg Register, val uint16) {
 	switch reg {
 	case A:
-		registers.A = byte(value)
+		registers.A = byte(val)
 	case B:
-		registers.B = byte(value)
+		registers.B = byte(val)
 	case C:
-		registers.C = byte(value)
+		registers.C = byte(val)
 	case D:
-		registers.D = byte(value)
+		registers.D = byte(val)
 	case E:
-		registers.E = byte(value)
+		registers.E = byte(val)
 	case F:
-		registers.F = byte(value)
+		registers.F = byte(val)
 	case H:
-		registers.H = byte(value)
+		registers.H = byte(val)
 	case L:
-		registers.L = byte(value)
+		registers.L = byte(val)
 	case SP:
-		registers.SP = value
+		registers.SP = val
 	case PC:
-		registers.PC = value
+		registers.PC = val
 	case AF:
-		registers.SetAF(value)
+		registers.SetAF(val)
 	case BC:
-		registers.SetBC(value)
+		registers.SetBC(val)
 	case DE:
-		registers.SetDE(value)
+		registers.SetDE(val)
 	case HL:
-		registers.SetHL(value)
+		registers.SetHL(val)
 	default:
 		panic(errs.NewInvalidOperandError(reg))
 	}
@@ -122,37 +122,37 @@ func (registers *Registers) Get(reg Register) uint16 {
 	Registers can be accessed as one 16 bit register OR separate 8 bit
 
 	|16|Hi|Lo|
-	|AF|A |- |
+	|AF|A |* |
 	|BC|B |C |
 	|DE|D |E |
 	|HL|H |L |
 */
 
 func (r *Registers) GetAF() uint16 {
-	return bits.To16(r.A, 0x0)
+	return bits.To16(r.A, r.F)
 }
 
-func (r *Registers) SetAF(value uint16) {
-	r.A = bits.Hi(value)
-	r.F = bits.Lo(value)
+func (r *Registers) SetAF(val uint16) {
+	r.A = bits.Hi(val)
+	r.F = bits.Lo(val & 0x00F0)
 }
 
 func (r *Registers) GetBC() uint16 {
 	return bits.To16(r.B, r.C)
 }
 
-func (r *Registers) SetBC(value uint16) {
-	r.B = bits.Hi(value)
-	r.C = bits.Lo(value)
+func (r *Registers) SetBC(val uint16) {
+	r.B = bits.Hi(val)
+	r.C = bits.Lo(val)
 }
 
 func (r *Registers) GetDE() uint16 {
 	return bits.To16(r.D, r.E)
 }
 
-func (r *Registers) SetDE(value uint16) {
-	r.D = bits.Hi(value)
-	r.E = bits.Lo(value)
+func (r *Registers) SetDE(val uint16) {
+	r.D = bits.Hi(val)
+	r.E = bits.Lo(val)
 }
 
 func (r *Registers) GetHL() uint16 {

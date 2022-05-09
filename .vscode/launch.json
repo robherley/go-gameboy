@@ -24,7 +24,8 @@
         "cpu_instrs.gb",
         "dmg-acid2.gb",
         "mem_timing.gb",
-        "tetris.gb"
+        "tetris.gb",
+        "01-special.gb"
       ],
       "default": "tetris.gb"
     },

@@ -106,8 +106,9 @@ func (cpu *CPU) Get(operand *Operand) uint16 {
 			}
 			if operand.Symbol == A8 {
 				// A8 is always a deref, and only used in LDH
-				// alternative symbol is ($FF00+a8)
-				return 0xFF00 | uint16(val)
+				// alternative defined use is ($FF00+a8)
+				addr := 0xFF00 | uint16(val)
+				return uint16(cpu.MMU.Read8(addr))
 			}
 			// no other deref cases for 8-bit beside A8
 			return uint16(val)

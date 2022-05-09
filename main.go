@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/robherley/go-gameboy/internal/debug"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	"github.com/robherley/go-gameboy/pkg/emulator"
 )
@@ -21,7 +20,7 @@ func main() {
 		panic(err)
 	}
 
-	debug.Cart(cart)
+	// debug.Cart(cart)
 
 	emu := emulator.New(cart)
 	emu.Boot()
