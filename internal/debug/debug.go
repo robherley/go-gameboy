@@ -76,8 +76,6 @@ func Instruction(pc, sp uint16, opcode byte, in *cpu.Instruction) {
 	}
 
 	fmt.Printf("%04X - %04X: [%02X]", sp, pc, opcode)
-
-	return
 	instructionStr := fmt.Sprintf("%s ", operationName(in.Operation))
 
 	if in.Operands != nil {

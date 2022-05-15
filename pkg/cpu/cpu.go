@@ -87,15 +87,17 @@ func (cpu *CPU) NextInstruction() (byte, *Instruction) {
 	return opcode, instruction
 }
 
-// Get will resolve the value of a symbol from the CPU
-// Useable for Data, Register, and byte symbols only
+// Get will resolve the value of a given operand from the CPU
+// Only valid for Data, Register and byte operands, will panic otherwise
 func (cpu *CPU) Get(operand *Operand) uint16 {
 	switch symbol := (operand).Symbol.(type) {
 	case Data:
 		if operand.Is16() {
 			val := cpu.Fetch16()
 			if operand.Deref {
-				val = cpu.MMU.Read16(val)
+				// derefs are always a byte
+				// special case for 0x08 is handled within LD itself
+				return uint16(cpu.MMU.Read8(val))
 			}
 			return val
 		} else {
@@ -122,36 +124,45 @@ func (cpu *CPU) Get(operand *Operand) uint16 {
 	case byte:
 		return uint16(symbol)
 	default:
-		panic(errs.NewInvalidOperandError(symbol))
+		panic(errs.NewInvalidGetOperandError(symbol))
 	}
 }
 
-// Set will assign the value held at symbol to a new value
-// Usable for Data and Register symbols only
-func (cpu *CPU) Set(operand *Operand, val uint16) {
-	is16 := 0xFF00&val != 0
-
+// Set8 will set 8-bit data based on the operand's symbol
+// Only valid for Data and Register operands, will panic otherwise
+func (cpu *CPU) Set8(operand *Operand, val byte) {
 	switch symbol := (operand).Symbol.(type) {
 	case Data:
 		addr := cpu.Get(operand)
-		if is16 {
-			cpu.MMU.Write16(addr, val)
-		} else {
-			cpu.MMU.Write8(addr, byte(val))
-		}
+		cpu.MMU.Write8(addr, byte(val))
 	case Register:
 		if operand.Deref {
 			addr := cpu.Registers.Get(symbol)
-			if is16 {
-				cpu.MMU.Write16(addr, val)
-			} else {
-				cpu.MMU.Write8(addr, byte(val))
-			}
+			cpu.MMU.Write8(addr, byte(val))
+		} else {
+			cpu.Registers.Set(symbol, uint16(val))
+		}
+	default:
+		panic(errs.NewInvalidSetOperandError(symbol))
+	}
+}
+
+// Set16 will set 16-bit data based on the operand's symbol
+// Only valid for Data and Register operands, will panic otherwise
+func (cpu *CPU) Set16(operand *Operand, val uint16) {
+	switch symbol := (operand).Symbol.(type) {
+	case Data:
+		addr := cpu.Get(operand)
+		cpu.MMU.Write16(addr, val)
+	case Register:
+		if operand.Deref {
+			addr := cpu.Registers.Get(symbol)
+			cpu.MMU.Write16(addr, val)
 		} else {
 			cpu.Registers.Set(symbol, val)
 		}
 	default:
-		panic(errs.NewInvalidOperandError(symbol))
+		panic(errs.NewInvalidSetOperandError(symbol))
 	}
 }
 

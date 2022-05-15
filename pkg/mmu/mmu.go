@@ -5,6 +5,7 @@ import (
 
 	"github.com/robherley/go-gameboy/internal/bits"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
+	errs "github.com/robherley/go-gameboy/pkg/errors"
 )
 
 type MMU struct {
@@ -30,8 +31,7 @@ func New(cart *cartridge.Cartridge, interruptRW readWriter) *MMU {
 func (mmu *MMU) Read8(address uint16) byte {
 	rw := mmu.readWriterFor(address)
 	if rw == nil {
-		// panic(errs.NewReadError(address, "mmu"))
-		return 0
+		panic(errs.NewReadError(address, "mmu"))
 	}
 
 	return rw.Read(address)
@@ -47,8 +47,7 @@ func (mmu *MMU) Read16(address uint16) uint16 {
 func (mmu *MMU) Write8(address uint16, data byte) {
 	rw := mmu.readWriterFor(address)
 	if rw == nil {
-		// panic(errs.NewReadError(address, "mmu"))
-		return
+		panic(errs.NewReadError(address, "mmu"))
 	}
 
 	rw.Write(address, data)

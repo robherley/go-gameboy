@@ -18,6 +18,14 @@ func NewInvalidOperandError(operand any) error {
 	return fmt.Errorf("%w: %v (%T)", InvalidOperandError, operand, operand)
 }
 
+func NewInvalidGetOperandError(operand any) error {
+	return fmt.Errorf("%w: cannot get value of %v (%T)", InvalidOperandError, operand, operand)
+}
+
+func NewInvalidSetOperandError(operand any) error {
+	return fmt.Errorf("%w: cannot set value of %v (%T)", InvalidOperandError, operand, operand)
+}
+
 func NewIllegalInstructionError(opcode byte) error {
 	return fmt.Errorf("%w: 0x%X", IllegalInstructionError, opcode)
 }
