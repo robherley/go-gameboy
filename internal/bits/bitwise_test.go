@@ -1,6 +1,7 @@
 package bits_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/robherley/go-gameboy/internal/bits"
@@ -21,8 +22,10 @@ func TestLo(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := bits.Lo(tc.input)
-		assert.Equal(t, tc.expected, actual)
+		t.Run(fmt.Sprintf("Lo(%x)", tc.input), func(t *testing.T) {
+			actual := bits.Lo(tc.input)
+			assert.Equal(t, tc.expected, actual)
+		})
 	}
 }
 
@@ -40,8 +43,10 @@ func TestHi(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := bits.Hi(tc.input)
-		assert.Equal(t, tc.expected, actual)
+		t.Run(fmt.Sprintf("Hi(%x)", tc.input), func(t *testing.T) {
+			actual := bits.Hi(tc.input)
+			assert.Equal(t, tc.expected, actual)
+		})
 	}
 }
 
@@ -59,8 +64,10 @@ func TestTo16(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := bits.To16(tc.hi, tc.lo)
-		assert.Equal(t, tc.expected, actual)
+		t.Run(fmt.Sprintf("To16(%x, %x)", tc.hi, tc.lo), func(t *testing.T) {
+			actual := bits.To16(tc.hi, tc.lo)
+			assert.Equal(t, tc.expected, actual)
+		})
 	}
 }
 
@@ -77,8 +84,10 @@ func TestGetNBit(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := bits.GetNBit(tc.num, tc.bit)
-		assert.Equal(t, tc.expected, actual)
+		t.Run(fmt.Sprintf("GetNBit(%x, %d)", tc.num, tc.bit), func(t *testing.T) {
+			actual := bits.GetNBit(tc.num, tc.bit)
+			assert.Equal(t, tc.expected, actual)
+		})
 	}
 }
 
@@ -94,8 +103,10 @@ func TestSetNBit(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := bits.SetNBit(tc.num, tc.bit)
-		assert.Equal(t, tc.expected, actual)
+		t.Run(fmt.Sprintf("SetNBit(%x, %d)", tc.num, tc.bit), func(t *testing.T) {
+			actual := bits.SetNBit(tc.num, tc.bit)
+			assert.Equal(t, tc.expected, actual)
+		})
 	}
 }
 
@@ -111,7 +122,9 @@ func TestClearNBit(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := bits.ClearNBit(tc.num, tc.bit)
-		assert.Equal(t, tc.expected, actual)
+		t.Run(fmt.Sprintf("ClearNBit(%x, %d)", tc.num, tc.bit), func(t *testing.T) {
+			actual := bits.ClearNBit(tc.num, tc.bit)
+			assert.Equal(t, tc.expected, actual)
+		})
 	}
 }
