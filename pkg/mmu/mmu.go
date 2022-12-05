@@ -28,10 +28,6 @@ func New(cart *cartridge.Cartridge, interruptRW readWriter) *MMU {
 	}
 }
 
-func (mmu *MMU) Deref(address uint16) uint16 {
-	return uint16(mmu.Read8(address))
-}
-
 func (mmu *MMU) Read8(address uint16) byte {
 	rw := mmu.readWriterFor(address)
 	if rw == nil {

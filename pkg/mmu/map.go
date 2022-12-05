@@ -41,7 +41,8 @@ func (mmu *MMU) readWriterFor(address uint16) readWriter {
 	if address <= ROM_END {
 		return mmu.cartridge
 	} else if address <= CHAR_MAP_END {
-		return nil
+		// TODO(robherley): implement
+		return newNoop(false)
 	} else if address <= CART_RAM_END {
 		return mmu.cartridge
 	} else if address <= WRAM_END {
@@ -49,7 +50,8 @@ func (mmu *MMU) readWriterFor(address uint16) readWriter {
 	} else if address <= RES_ECHO_END {
 		panic(errs.NewAccessError(address, "reserved echo memory"))
 	} else if address <= OAM_END {
-		return nil
+		// TODO(robherley): implement
+		return newNoop(false)
 	} else if address <= RES_UNUSE_END {
 		panic(errs.NewAccessError(address, "reserved unused memory"))
 	} else if address <= IO_REG_END {

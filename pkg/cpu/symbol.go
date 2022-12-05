@@ -5,7 +5,7 @@ import errs "github.com/robherley/go-gameboy/pkg/errors"
 // Symbol represents a data type that can be used as an operand
 type Symbol interface {
 	// Resolve will return the value of the symbol from the CPU.
-	// Note: it will not automatically dereference the value held at symbol
+	// Note: it will not dereference the value held at symbol
 	Resolve(c *CPU) uint16
 }
 

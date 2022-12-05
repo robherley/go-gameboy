@@ -87,48 +87,50 @@ func (cpu *CPU) NextInstruction() (byte, *Instruction) {
 	return opcode, instruction
 }
 
-// For a given operand, resolve the value at it's symbol (without dereferencing)
-func (cpu *CPU) Resolve(operand *Operand) uint16 {
-	return operand.Symbol.Resolve(cpu)
-}
-
-// Set8 will set 8-bit data based on the operand's symbol
-// Only valid for Data and Register operands, will panic otherwise
-func (cpu *CPU) Set8(operand *Operand, val byte) {
-	switch symbol := (operand).Symbol.(type) {
-	case Address:
-		addr := cpu.Fetch16()
-		cpu.MMU.Write8(addr, val)
+// For a given operand, resolve the value at it's symbol, automatically dereferencing the source if possible.
+// The Address, Data and Byte symbols will never be dereferenced
+func (cpu *CPU) Get(operand *Operand) uint16 {
+	val := operand.Symbol.Resolve(cpu)
+	switch symbol := operand.Symbol.(type) {
 	case Register:
 		if operand.Deref {
-			addr := cpu.Registers.Get(symbol)
-			cpu.MMU.Write8(addr, byte(val))
-		} else {
-			cpu.Registers.Set(symbol, uint16(val))
+			return uint16(cpu.MMU.Read8(val))
 		}
+		return val
+	case Address, Data, Byte:
+		// for byte and data, there is never a dereference
+		// but, for address, the context matters on how it's being used
+		//  ie: see LDH A,(a8) vs. LDH (a8),A
+		//  the former sets A to the dereference address, the latter sets the non-dereferenced address to A
+		//  so for address derefs, we'll handle those case by case
+		return val
 	default:
-		panic(errs.NewInvalidSetOperandError(symbol))
+		panic(errs.NewInvalidGetOperandError(symbol))
 	}
 }
 
-// Set16 will set 16-bit data based on the operand's symbol
-// Only valid for Data and Register operands, will panic otherwise
-func (cpu *CPU) Set16(operand *Operand, val uint16) {
+// For a given operand, set the value automatically dereferencing the destination if possible.
+// The Address and Data symbols will never be dereferenced here
+func (cpu *CPU) Set(operand *Operand, val uint16) {
+	writeFunc := func(addr uint16, data uint16) {
+		if operand.Is16() && !operand.Deref { // 16 bit load
+			cpu.MMU.Write16(addr, data)
+		} else { // 8 bit load
+			cpu.MMU.Write8(addr, byte(data))
+		}
+	}
+
 	switch symbol := operand.Symbol.(type) {
-	case Address:
-		val := cpu.Fetch16()
-		addr := cpu.MMU.Read16(val)
-		cpu.MMU.Write16(addr, val)
-	case Data:
-		addr := operand.Symbol.Resolve(cpu)
-		cpu.MMU.Write16(addr, val)
 	case Register:
 		if operand.Deref {
 			addr := cpu.Registers.Get(symbol)
-			cpu.MMU.Write16(addr, val)
+			writeFunc(addr, val)
 		} else {
 			cpu.Registers.Set(symbol, val)
 		}
+	case Address, Data:
+		addr := cpu.Get(operand)
+		writeFunc(addr, val)
 	default:
 		panic(errs.NewInvalidSetOperandError(symbol))
 	}

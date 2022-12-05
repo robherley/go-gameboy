@@ -27,21 +27,18 @@ func HALT(cpu *CPU, ops []Operand) {
 // INC: increment register
 func INC(cpu *CPU, ops []Operand) {
 	src := ops[0]
-	val := cpu.Resolve(&src)
-	if src.Deref {
-		val = uint16(cpu.MMU.Read8(val))
-	}
+	val := cpu.Get(&src)
 
 	result := val + 1
 
-	if src.Is16() && !ops[0].Deref {
-		cpu.Set16(&src, result)
+	cpu.Set(&src, result)
+
+	if src.Is16() && !src.Deref {
 		// if the parameter is 16 bit (and not a dereference)
 		// then return and no flags get set (see instructions 0x03, 0x13, etc)
 		return
 	}
 
-	cpu.Set8(&src, byte(result))
 	cpu.Registers.SetFlag(FlagZ, (result&0xFF) == 0)
 	cpu.Registers.SetFlag(FlagN, false)
 	cpu.Registers.SetFlag(FlagH, (result&0xF) == 0)
@@ -50,21 +47,18 @@ func INC(cpu *CPU, ops []Operand) {
 // DEC: decrement register
 func DEC(cpu *CPU, ops []Operand) {
 	src := ops[0]
-	val := cpu.Resolve(&src)
-	if src.Deref {
-		val = uint16(cpu.MMU.Read8(val))
-	}
+	val := cpu.Get(&src)
 
 	result := val - 1
 
-	if src.Is16() && !ops[0].Deref {
-		cpu.Set16(&src, result)
+	cpu.Set(&src, result)
+
+	if src.Is16() && !src.Deref {
 		// if the parameter is 16 bit (and not a dereference)
 		// then return and no flags get set (see instructions 0x0B, 0x1B, etc)
 		return
 	}
 
-	cpu.Set8(&src, byte(result))
 	cpu.Registers.SetFlag(FlagZ, (result&0xFF) == 0)
 	cpu.Registers.SetFlag(FlagN, true)
 	cpu.Registers.SetFlag(FlagH, (result&0xF) == 0xF)
@@ -73,10 +67,7 @@ func DEC(cpu *CPU, ops []Operand) {
 // JP: jump to address (and check condition)
 func JP(cpu *CPU, ops []Operand) {
 	last := ops[len(ops)-1]
-	addr := cpu.Resolve(&last)
-	if last.Deref { // for instruction 0x59: JP (HL)
-		addr = cpu.MMU.Deref(addr)
-	}
+	addr := cpu.Get(&last)
 
 	if condition, ok := ops[0].Symbol.(Condition); ok {
 		if !cpu.Registers.IsCondition(condition) {
@@ -91,7 +82,7 @@ func JP(cpu *CPU, ops []Operand) {
 // JR: jump to relative address (and check condition)
 func JR(cpu *CPU, ops []Operand) {
 	last := ops[len(ops)-1]
-	addr := cpu.Resolve(&last)
+	addr := cpu.Get(&last)
 
 	if condition, ok := ops[0].Symbol.(Condition); ok {
 		if !cpu.Registers.IsCondition(condition) {
@@ -106,7 +97,7 @@ func JR(cpu *CPU, ops []Operand) {
 // CALL: push address of next instruction onto stack (and check condition)
 func CALL(cpu *CPU, ops []Operand) {
 	last := ops[len(ops)-1]
-	addr := cpu.Resolve(&last)
+	addr := cpu.Get(&last)
 
 	if condition, ok := ops[0].Symbol.(Condition); ok {
 		if !cpu.Registers.IsCondition(condition) {
@@ -121,7 +112,7 @@ func CALL(cpu *CPU, ops []Operand) {
 
 // RST: push address on to stack, jump to n
 func RST(cpu *CPU, ops []Operand) {
-	addr := cpu.Resolve(&ops[0])
+	addr := cpu.Get(&ops[0])
 
 	cpu.StackPush16(cpu.Registers.PC)
 	cpu.Registers.PC = addr
@@ -181,42 +172,15 @@ func LD(cpu *CPU, ops []Operand) {
 
 	dst := &ops[0]
 	src := &ops[1]
+	srcData := cpu.Get(src)
 
-	// check is operation is a 16 bit load
-	is16BitLoad := false
-	if src.Symbol == SP {
-		// LD (nn),SP
-		is16BitLoad = true
-	} else if dst.Is16() && !dst.Deref {
-		// LD dd,nn
-		// LD SP,HL
-		is16BitLoad = true
+	if _, ok := src.Symbol.(Address); ok && src.Deref {
+		// if the source is an address and is deref, get the value
+		// this is for instruction 0xFA: LD A,(a16)
+		srcData = uint16(cpu.MMU.Read8(srcData))
 	}
 
-	srcData := cpu.Resolve(src)
-
-	// if dst.Symbol == A8 || dst.Symbol == A16 {
-	// 	// if dst is address, we don't want to resolve the dereference and just write to that address
-	// 	var addr uint16
-	// 	if dst.Is16() {
-	// 		addr = cpu.Fetch16()
-	// 	} else {
-	// 		addr = uint16(cpu.Fetch8())
-	// 	}
-	// 	cpu.MMU.Write8(addr, byte(srcData))
-	// } else {
-	// 	if is16BitLoad {
-	// 		cpu.Set16(dst, srcData)
-	// 	} else {
-	// 		cpu.Set8(dst, byte(srcData))
-	// 	}
-	// }
-
-	if is16BitLoad {
-		cpu.Set16(dst, srcData)
-	} else {
-		cpu.Set8(dst, byte(srcData))
-	}
+	cpu.Set(dst, srcData)
 
 	// check if any HL+ or HL-, and adjust
 	for i := range ops {
@@ -239,12 +203,12 @@ func LD(cpu *CPU, ops []Operand) {
 // LDH: loads/sets A from 8-bit signed data
 func LDH(cpu *CPU, ops []Operand) {
 	if ops[0].Symbol == A { // LDH A,(a8)
-		addr := cpu.Resolve(&ops[1])
+		addr := cpu.Get(&ops[1])
 		val := cpu.MMU.Read8(addr)
 		cpu.Registers.Set(A, uint16(val))
 	} else { // LDH (a8),A
-		addr := cpu.Resolve(&ops[0])
-		val := cpu.Resolve(&ops[1])
+		addr := cpu.Get(&ops[0])
+		val := cpu.Get(&ops[1])
 		cpu.MMU.Write8(addr, byte(val))
 	}
 }
@@ -258,17 +222,14 @@ func POP(cpu *CPU, ops []Operand) {
 
 // PUSH: pushes a two byte value on the stack
 func PUSH(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
+	val := cpu.Get(&ops[0])
 	cpu.StackPush16(val)
 }
 
 // ADD: Add a value to another value
 func ADD(cpu *CPU, ops []Operand) {
-	valA := cpu.Resolve(&ops[0])
-	valB := cpu.Resolve(&ops[1])
-	if ops[1].Deref { // for instruction 0x86: ADD A,(HL)
-		valB = cpu.MMU.Deref(valB)
-	}
+	valA := cpu.Get(&ops[0])
+	valB := cpu.Get(&ops[1])
 
 	reg := ops[0].Symbol.(Register)
 	sum := valA + valB
@@ -293,11 +254,8 @@ func ADD(cpu *CPU, ops []Operand) {
 
 // ADC: Add with carry
 func ADC(cpu *CPU, ops []Operand) {
-	valA := cpu.Resolve(&ops[0])
-	valB := cpu.Resolve(&ops[1])
-	if ops[1].Deref { // for instruction 0x8E: ADC A,(HL)
-		valB = cpu.MMU.Deref(valB)
-	}
+	valA := cpu.Get(&ops[0])
+	valB := cpu.Get(&ops[1])
 
 	var carry uint16
 	if cpu.Registers.GetFlag(FlagC) {
@@ -316,10 +274,7 @@ func ADC(cpu *CPU, ops []Operand) {
 // SUB: Subtract a value from another value
 func SUB(cpu *CPU, ops []Operand) {
 	valA := uint16(cpu.Registers.A)
-	valB := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instruction 0x96: SUB (HL)
-		valB = cpu.MMU.Deref(valB)
-	}
+	valB := cpu.Get(&ops[0])
 
 	diff := valA - valB
 
@@ -333,10 +288,7 @@ func SUB(cpu *CPU, ops []Operand) {
 // SBC: Subtract a value (with carry flag) from another value
 func SBC(cpu *CPU, ops []Operand) {
 	valA := uint16(cpu.Registers.A)
-	valB := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instruction 0x9E: SBC A,(HL)
-		valB = cpu.MMU.Deref(valB)
-	}
+	valB := cpu.Get(&ops[0])
 
 	var carry uint16
 	if cpu.Registers.GetFlag(FlagC) {
@@ -354,10 +306,7 @@ func SBC(cpu *CPU, ops []Operand) {
 
 // AND: logical AND with register A
 func AND(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instruction 0xA6: AND (HL)
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	cpu.Registers.A &= bits.Lo(val)
 
@@ -369,10 +318,7 @@ func AND(cpu *CPU, ops []Operand) {
 
 // OR: logical OR with register A
 func OR(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instruction 0xB6: OR (HL)
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	cpu.Registers.A |= bits.Lo(val)
 
@@ -384,10 +330,7 @@ func OR(cpu *CPU, ops []Operand) {
 
 // XOR: logical exclusive OR with register A
 func XOR(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instruction 0xAE: XOR (HL)
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	cpu.Registers.A ^= bits.Lo(val)
 
@@ -400,10 +343,7 @@ func XOR(cpu *CPU, ops []Operand) {
 // CP: compare with A (subtraction without setting result)
 func CP(cpu *CPU, ops []Operand) {
 	valA := uint16(cpu.Registers.A)
-	valB := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instruction 0xBE: CP (HL)
-		valB = cpu.MMU.Deref(valB)
-	}
+	valB := cpu.Get(&ops[0])
 
 	diff := valA - valB
 
@@ -544,11 +484,8 @@ func PREFIX(cpu *CPU, ops []Operand) {}
 
 // BIT: (cb-prefixed) test bit in a register
 func BIT(cpu *CPU, ops []Operand) {
-	bit := cpu.Resolve(&ops[0])
-	val := cpu.Resolve(&ops[1])
-	if ops[1].Deref { // for instructions 0xCB46, 0xCB4E, 0xCB56, 0xCB5E, 0xCB66, 0xCB6E, 0xCB76, 0xCB7E
-		val = cpu.MMU.Deref(val)
-	}
+	bit := cpu.Get(&ops[0])
+	val := cpu.Get(&ops[1])
 
 	// will return t/f for nth bit in val
 	isSet := bits.GetNBit(byte(val), byte(bit))
@@ -561,11 +498,8 @@ func BIT(cpu *CPU, ops []Operand) {
 
 // RES: (cb-prefixed) reset bit b in a register
 func RES(cpu *CPU, ops []Operand) {
-	bit := cpu.Resolve(&ops[0])
-	val := cpu.Resolve(&ops[1])
-	if ops[1].Deref { // for instructions 0xCB86, 0xCB8E, 0xCB96, 0xCB9E, 0xCBA6, 0xCBAE, 0xCBB6, 0xCBBE
-		val = cpu.MMU.Deref(val)
-	}
+	bit := cpu.Get(&ops[0])
+	val := cpu.Get(&ops[1])
 
 	result := bits.ClearNBit(byte(val), byte(bit))
 
@@ -582,24 +516,18 @@ func RES(cpu *CPU, ops []Operand) {
 
 // SET: (cb-prefixed) set bit b in a register
 func SET(cpu *CPU, ops []Operand) {
-	bit := cpu.Resolve(&ops[0])
-	val := cpu.Resolve(&ops[1])
-	if ops[1].Deref { // for instructions 0xCBc6, 0xCBCE, 0xCBD6, 0xCBDE, 0xCBE6, 0xCBE6, 0xCBE6, 0xCBE6
-		val = cpu.MMU.Deref(val)
-	}
+	bit := cpu.Get(&ops[0])
+	val := cpu.Get(&ops[1])
 
 	result := bits.SetNBit(byte(val), byte(bit))
 
-	cpu.Set8(&ops[1], result)
+	cpu.Set(&ops[1], uint16(result))
 	// no flags affected
 }
 
 // RLC: (cb-prefixed) rotate left, old bit 7 to carry
 func RLC(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB06
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	isCarry := bits.GetNBit(byte(val), 7)
 	result := byte(val) << 1
@@ -607,16 +535,13 @@ func RLC(cpu *CPU, ops []Operand) {
 		result |= 1
 	}
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // RL: (cb-prefixed) rotate left through carry
 func RL(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB16
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	isCarry := bits.GetNBit(byte(val), 7)
 	isCarryFlagSet := cpu.Registers.GetFlag(FlagC)
@@ -625,16 +550,13 @@ func RL(cpu *CPU, ops []Operand) {
 		result |= 1
 	}
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // RRC: (cb-prefixed) rotate right, old bit 0 to carry
 func RRC(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB0E
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	isCarry := bits.GetNBit(byte(val), 0)
 	result := byte(val) >> 1
@@ -642,16 +564,13 @@ func RRC(cpu *CPU, ops []Operand) {
 		result |= (1 << 7)
 	}
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // RR: (cb-prefixed) rotate right through carry
 func RR(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB1E
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	isCarry := bits.GetNBit(byte(val), 0)
 	isCarryFlagSet := cpu.Registers.GetFlag(FlagC)
@@ -660,65 +579,53 @@ func RR(cpu *CPU, ops []Operand) {
 		result |= (1 << 7)
 	}
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // SLA: (cb-prefixed) shift left into carry. LSB of n set to 0
 func SLA(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB26
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	result := byte(val) << 1
 	isCarry := bits.GetNBit(byte(val), 7)
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // SRA: (cb-prefixed) shift right into carry. MSB unaffected
 func SRA(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB2E
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	result := (byte(val) >> 1) | (byte(val) & (1 << 7))
 	isCarry := bits.GetNBit(byte(val), 0)
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // SRL: (cb-prefixed) shift right into carry. MSB set to 0
 func SRL(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB3E
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	result := byte(val) >> 1
 	isCarry := bits.GetNBit(byte(val), 0)
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
 }
 
 // SWAP: (cb-prefixed) swap upper & lower nibbles
 func SWAP(cpu *CPU, ops []Operand) {
-	val := cpu.Resolve(&ops[0])
-	if ops[0].Deref { // for instructions 0xCB36
-		val = cpu.MMU.Deref(val)
-	}
+	val := cpu.Get(&ops[0])
 
 	loNibs := byte(val) & 0x0F
 	hiNibs := byte(val) & 0xF0
 
 	result := (loNibs << 4) | (hiNibs >> 4)
 
-	cpu.Set8(&ops[0], result)
+	cpu.Set(&ops[0], uint16(result))
 	cpu.Registers.SetFlag(FlagZ, result == 0)
 	cpu.Registers.SetFlag(FlagN, false)
 	cpu.Registers.SetFlag(FlagH, false)
