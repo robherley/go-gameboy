@@ -364,7 +364,7 @@ func RLCA(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Registers.A = result
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(false, isCarry)
 }
 
 // RLCA: rotate A right. Old bit 0 to carry flag
@@ -378,7 +378,7 @@ func RRCA(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Registers.A = result
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(false, isCarry)
 }
 
 // RLA: rotate A left through carry flag
@@ -393,10 +393,10 @@ func RLA(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Registers.A = result
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(false, isCarry)
 }
 
-// RLA: rotate A right through carry flag
+// RRA: rotate A right through carry flag
 func RRA(cpu *CPU, ops []Operand) {
 	val := cpu.Registers.A
 
@@ -408,7 +408,7 @@ func RRA(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Registers.A = result
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(false, isCarry)
 }
 
 // DAA: decimal adjust register A
@@ -536,7 +536,7 @@ func RLC(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // RL: (cb-prefixed) rotate left through carry
@@ -551,7 +551,7 @@ func RL(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // RRC: (cb-prefixed) rotate right, old bit 0 to carry
@@ -565,7 +565,7 @@ func RRC(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // RR: (cb-prefixed) rotate right through carry
@@ -580,7 +580,7 @@ func RR(cpu *CPU, ops []Operand) {
 	}
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // SLA: (cb-prefixed) shift left into carry. LSB of n set to 0
@@ -591,7 +591,7 @@ func SLA(cpu *CPU, ops []Operand) {
 	isCarry := bits.GetNBit(byte(val), 7)
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // SRA: (cb-prefixed) shift right into carry. MSB unaffected
@@ -602,7 +602,7 @@ func SRA(cpu *CPU, ops []Operand) {
 	isCarry := bits.GetNBit(byte(val), 0)
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // SRL: (cb-prefixed) shift right into carry. MSB set to 0
@@ -613,7 +613,7 @@ func SRL(cpu *CPU, ops []Operand) {
 	isCarry := bits.GetNBit(byte(val), 0)
 
 	cpu.Set(&ops[0], uint16(result))
-	cpu.Registers.SetRotateAndShiftFlags(result, isCarry)
+	cpu.Registers.SetRotateAndShiftFlags(result == 0, isCarry)
 }
 
 // SWAP: (cb-prefixed) swap upper & lower nibbles

@@ -216,8 +216,8 @@ func (r *Registers) SetFlag(f Flag, set bool) {
 }
 
 // SetRotateAndShiftFlags: helper to set flags for rotate/shift funcs
-func (r *Registers) SetRotateAndShiftFlags(result byte, isCarry bool) {
-	r.SetFlag(FlagZ, result == 0)
+func (r *Registers) SetRotateAndShiftFlags(setZero, isCarry bool) {
+	r.SetFlag(FlagZ, setZero)
 	r.SetFlag(FlagN, false)
 	r.SetFlag(FlagH, false)
 	r.SetFlag(FlagC, isCarry)
