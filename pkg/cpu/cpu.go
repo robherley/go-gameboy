@@ -79,7 +79,7 @@ func (cpu *CPU) NextInstruction() (byte, *Instruction) {
 		opcode = cpu.Fetch8()
 	}
 
-	instruction := InstructionFromOPCode(opcode, isCB)
+	instruction := InstructionFromOPCode(Byte(opcode), isCB)
 	if instruction == nil {
 		panic(errs.NewUnknownOPCodeError(opcode))
 	}
@@ -87,54 +87,18 @@ func (cpu *CPU) NextInstruction() (byte, *Instruction) {
 	return opcode, instruction
 }
 
-// Get will resolve the value of a given operand from the CPU
-// Only valid for Data, Register and byte operands, will panic otherwise
-func (cpu *CPU) Get(operand *Operand) uint16 {
-	switch symbol := (operand).Symbol.(type) {
-	case Data:
-		if operand.Is16() {
-			val := cpu.Fetch16()
-			if operand.Deref {
-				// derefs are always a byte
-				// special case for 0x08 is handled within LD itself
-				return uint16(cpu.MMU.Read8(val))
-			}
-			return val
-		} else {
-			val := cpu.Fetch8()
-			if operand.Symbol == R8 {
-				// R8 is signed, convert it to int8 first
-				return uint16(int8(val))
-			}
-			if operand.Symbol == A8 {
-				// A8 is always a deref, and only used in LDH
-				// alternative defined use is ($FF00+a8)
-				addr := 0xFF00 | uint16(val)
-				return uint16(cpu.MMU.Read8(addr))
-			}
-			// no other deref cases for 8-bit beside A8
-			return uint16(val)
-		}
-	case Register:
-		val := cpu.Registers.Get(symbol)
-		if operand.Deref {
-			val = uint16(cpu.MMU.Read8(val))
-		}
-		return val
-	case byte:
-		return uint16(symbol)
-	default:
-		panic(errs.NewInvalidGetOperandError(symbol))
-	}
+// For a given operand, resolve the value at it's symbol (without dereferencing)
+func (cpu *CPU) Resolve(operand *Operand) uint16 {
+	return operand.Symbol.Resolve(cpu)
 }
 
 // Set8 will set 8-bit data based on the operand's symbol
 // Only valid for Data and Register operands, will panic otherwise
 func (cpu *CPU) Set8(operand *Operand, val byte) {
 	switch symbol := (operand).Symbol.(type) {
-	case Data:
-		addr := cpu.Get(operand)
-		cpu.MMU.Write8(addr, byte(val))
+	case Address:
+		addr := cpu.Fetch16()
+		cpu.MMU.Write8(addr, val)
 	case Register:
 		if operand.Deref {
 			addr := cpu.Registers.Get(symbol)
@@ -150,9 +114,13 @@ func (cpu *CPU) Set8(operand *Operand, val byte) {
 // Set16 will set 16-bit data based on the operand's symbol
 // Only valid for Data and Register operands, will panic otherwise
 func (cpu *CPU) Set16(operand *Operand, val uint16) {
-	switch symbol := (operand).Symbol.(type) {
+	switch symbol := operand.Symbol.(type) {
+	case Address:
+		val := cpu.Fetch16()
+		addr := cpu.MMU.Read16(val)
+		cpu.MMU.Write16(addr, val)
 	case Data:
-		addr := cpu.Get(operand)
+		addr := operand.Symbol.Resolve(cpu)
 		cpu.MMU.Write16(addr, val)
 	case Register:
 		if operand.Deref {

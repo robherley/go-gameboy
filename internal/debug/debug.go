@@ -48,18 +48,7 @@ func CPU(c *cpu.CPU) {
 		return
 	}
 
-	flagStr := func(f cpu.Flag) string {
-		if c.Registers.GetFlag(f) {
-			return "1"
-		} else {
-			return "0"
-		}
-	}
-
-	fmt.Printf(" | AF: %02X%02X BC: %02X%02X DE: %02X%02X HL: %02X%02X ", c.Registers.A, c.Registers.F, c.Registers.B, c.Registers.C, c.Registers.D, c.Registers.E, c.Registers.H, c.Registers.L)
-	fmt.Printf("| ZNHC: %s%s%s%s", flagStr(cpu.FlagZ), flagStr(cpu.FlagN), flagStr(cpu.FlagH), flagStr(cpu.FlagC))
-
-	fmt.Println()
+	fmt.Printf("A:%02X F:%02X B:%02X C: %02X D:%02X E:%02X H:%02X L:%02X SP:%04X PCMEM:%02X,%02X,%02X,%02X\n", c.Registers.A, c.Registers.F, c.Registers.B, c.Registers.C, c.Registers.D, c.Registers.E, c.Registers.H, c.Registers.L, c.Registers.SP, c.Registers.PC, c.Registers.PC+1, c.Registers.PC+2, c.Registers.PC+3)
 }
 
 func Interrupt(it cpu.InterruptType) {
@@ -75,13 +64,12 @@ func Instruction(pc, sp uint16, opcode byte, in *cpu.Instruction) {
 		return
 	}
 
-	fmt.Printf("%04X - %04X: [%02X]", sp, pc, opcode)
 	instructionStr := fmt.Sprintf("%s ", operationName(in.Operation))
 
 	if in.Operands != nil {
 		for i, op := range in.Operands {
 			symbol := fmt.Sprintf("%v", op.Symbol)
-			if num, ok := op.Symbol.(byte); ok {
+			if num, ok := op.Symbol.(cpu.Byte); ok {
 				symbol = fmt.Sprintf("%d", num)
 			}
 

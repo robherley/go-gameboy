@@ -114,7 +114,7 @@ func (registers *Registers) Get(reg Register) uint16 {
 	case HL:
 		return registers.GetHL()
 	default:
-		panic(errs.NewInvalidOperandError(reg))
+		panic(errs.NewInvalidSymbolError(reg))
 	}
 }
 
@@ -199,7 +199,7 @@ func (r *Registers) IsCondition(cond Condition) bool {
 	case Ca:
 		return r.GetFlag(FlagC)
 	default:
-		panic(errs.NewInvalidOperandError(cond))
+		panic(errs.NewInvalidSymbolError(cond))
 	}
 }
 

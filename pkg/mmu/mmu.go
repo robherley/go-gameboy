@@ -28,6 +28,10 @@ func New(cart *cartridge.Cartridge, interruptRW readWriter) *MMU {
 	}
 }
 
+func (mmu *MMU) Deref(address uint16) uint16 {
+	return uint16(mmu.Read8(address))
+}
+
 func (mmu *MMU) Read8(address uint16) byte {
 	rw := mmu.readWriterFor(address)
 	if rw == nil {
@@ -47,7 +51,7 @@ func (mmu *MMU) Read16(address uint16) uint16 {
 func (mmu *MMU) Write8(address uint16, data byte) {
 	rw := mmu.readWriterFor(address)
 	if rw == nil {
-		panic(errs.NewReadError(address, "mmu"))
+		panic(errs.NewWriteError(address, "mmu"))
 	}
 
 	rw.Write(address, data)
@@ -56,6 +60,10 @@ func (mmu *MMU) Write8(address uint16, data byte) {
 func (mmu *MMU) Write16(address uint16, value uint16) {
 	mmu.Write8(address, bits.Lo(value))
 	mmu.Write8(address+1, bits.Hi(value))
+}
+
+func (mmu *MMU) DebugMem() {
+	// fmt.Printf("%X\n", mmu.Read8(0xd800))
 }
 
 func (mmu *MMU) DebugSerial() {

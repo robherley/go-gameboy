@@ -16,6 +16,11 @@ func newIO() *io {
 }
 
 func (i *io) Read(address uint16) byte {
+	// TODO(robherley): remove, debug for gb doctor
+	if address == 0xFF44 {
+		return 0x90
+	}
+
 	switch address {
 	case SB_SERIAL_TRANSFER:
 		return i.serialData[0]

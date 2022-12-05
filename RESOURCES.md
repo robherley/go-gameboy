@@ -9,3 +9,4 @@
 - https://izik1.github.io/gbops/
 - https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
 - http://www.devrs.com/gb/files/opcodes.html
+- https://github.com/robert/gameboy-doctor
