@@ -16,23 +16,23 @@ func newSerial() *serial {
 	return &serial{0x0, 0x0}
 }
 
-func (i *serial) Read(address uint16) byte {
+func (s *serial) Read(address uint16) byte {
 	switch address {
 	case SB_SERIAL_TRANSFER:
-		return i.transfer
+		return s.transfer
 	case SC_SERIAL_CONTROL:
-		return i.control
+		return s.control
 	default:
 		panic(errs.NewReadError(address, "serial"))
 	}
 }
 
-func (i *serial) Write(address uint16, data byte) {
+func (s *serial) Write(address uint16, data byte) {
 	switch address {
 	case SB_SERIAL_TRANSFER:
-		i.transfer = data
+		s.transfer = data
 	case SC_SERIAL_CONTROL:
-		i.control = data
+		s.control = data
 	default:
 		panic(errs.NewWriteError(address, "serial"))
 	}

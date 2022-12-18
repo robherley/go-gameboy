@@ -8,6 +8,7 @@ import (
 
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	"github.com/robherley/go-gameboy/pkg/cpu"
+	"github.com/robherley/go-gameboy/pkg/interrupt"
 )
 
 var Hide = false
@@ -51,7 +52,7 @@ func CPU(c *cpu.CPU) {
 	fmt.Printf("A:%02X F:%02X B:%02X C: %02X D:%02X E:%02X H:%02X L:%02X SP:%04X PCMEM:%02X,%02X,%02X,%02X\n", c.Registers.A, c.Registers.F, c.Registers.B, c.Registers.C, c.Registers.D, c.Registers.E, c.Registers.H, c.Registers.L, c.Registers.SP, c.Registers.PC, c.Registers.PC+1, c.Registers.PC+2, c.Registers.PC+3)
 }
 
-func Interrupt(it cpu.InterruptType) {
+func Interrupt(it interrupt.Type) {
 	if Hide {
 		return
 	}

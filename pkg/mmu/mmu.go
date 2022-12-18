@@ -6,6 +6,7 @@ import (
 	"github.com/robherley/go-gameboy/internal/bits"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	errs "github.com/robherley/go-gameboy/pkg/errors"
+	"github.com/robherley/go-gameboy/pkg/interrupt"
 )
 
 type MMU struct {
@@ -13,17 +14,17 @@ type MMU struct {
 	hram      *ram
 	wram      *ram
 	serial    *serial
-	interrupt *interrupt
+	interrupt *interrupt.Interrupt
 	lcd       *lcd
 }
 
-func New(cart *cartridge.Cartridge) *MMU {
+func New(cart *cartridge.Cartridge, it *interrupt.Interrupt) *MMU {
 	return &MMU{
 		cartridge: cart,
+		interrupt: it,
 		hram:      newHRAM(),
 		wram:      newWRAM(),
 		serial:    newSerial(),
-		interrupt: newInterrupt(),
 		lcd:       newLCD(),
 	}
 }

@@ -4,27 +4,24 @@ import (
 	"github.com/robherley/go-gameboy/internal/bits"
 	"github.com/robherley/go-gameboy/pkg/cartridge"
 	errs "github.com/robherley/go-gameboy/pkg/errors"
+	"github.com/robherley/go-gameboy/pkg/interrupt"
 	"github.com/robherley/go-gameboy/pkg/mmu"
 )
 
 type CPU struct {
 	Registers *Registers
 	MMU       *mmu.MMU
-	Interrupt *Interrupt
+	Interrupt *interrupt.Interrupt
 	Halted    bool
 }
 
 // https://gbdev.io/pandocs/Power_Up_Sequence.html
 func New(cart *cartridge.Cartridge) *CPU {
-	interrupt := &Interrupt{
-		MasterEnabled: true,
-		EI:            MASTER_SET_NONE,
-		DI:            MASTER_SET_NONE,
-	}
+	interrupt := interrupt.New()
 
 	return &CPU{
 		Registers: RegistersForDMG(cart),
-		MMU:       mmu.New(cart),
+		MMU:       mmu.New(cart, interrupt),
 		Interrupt: interrupt,
 		Halted:    false,
 	}
@@ -136,38 +133,37 @@ func (cpu *CPU) Set(operand *Operand, val uint16) {
 
 func (cpu *CPU) HandleInterrupts() {
 	// check if master flag should be enabled this cycle
-	if cpu.Interrupt.EI != MASTER_SET_NONE {
-		if cpu.Interrupt.EI == MASTER_SET_NOW {
+	if cpu.Interrupt.EI != interrupt.MASTER_SET_NONE {
+		if cpu.Interrupt.EI == interrupt.MASTER_SET_NOW {
 			cpu.Interrupt.MasterEnabled = true
 		}
 		cpu.Interrupt.EI--
 	}
 
 	// check if master flag should be disabled this cycle
-	if cpu.Interrupt.DI != MASTER_SET_NONE {
-		if cpu.Interrupt.DI == MASTER_SET_NOW {
+	if cpu.Interrupt.DI != interrupt.MASTER_SET_NONE {
+		if cpu.Interrupt.DI == interrupt.MASTER_SET_NOW {
 			cpu.Interrupt.MasterEnabled = false
 		}
 		cpu.Interrupt.DI--
 	}
 
+	// exit early if master is not enabled
 	if !cpu.Interrupt.MasterEnabled {
 		return
 	}
 
-	for _, interrupt := range interrupts {
-		addr := interruptsToAddress[interrupt]
+	for _, interruptType := range interrupt.Types {
+		addr := interrupt.TypeToAddress[interruptType]
 
 		// only handle if *both* interrupt enable and interrupt flag are set
-		if InterruptTriggered(cpu, interrupt) {
+		if cpu.Interrupt.Triggered(interruptType) {
 			// 1. push program counter to stack
 			cpu.StackPush16(cpu.Registers.PC)
 			// 2. set program counter to mapped interrupt address
 			cpu.Registers.PC = addr
-			// 3. clear interrupt flag
-			flag := cpu.MMU.Read8(mmu.IF_INTERRUPT_FLAG)
-			flag &= ^byte(interrupt)
-			cpu.MMU.Write8(mmu.IF_INTERRUPT_FLAG, flag)
+			// 3. clear interrupt flag for type
+			cpu.Interrupt.Flag &= ^byte(interruptType)
 			// 4. unhalt cpu
 			cpu.Halted = false
 			// 5. disable all interrupts

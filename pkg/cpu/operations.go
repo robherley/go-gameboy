@@ -3,6 +3,7 @@ package cpu
 import (
 	"github.com/robherley/go-gameboy/internal/bits"
 	errs "github.com/robherley/go-gameboy/pkg/errors"
+	"github.com/robherley/go-gameboy/pkg/interrupt"
 )
 
 // https://gbdev.io/pandocs/CPU_Instruction_Set.html
@@ -141,12 +142,12 @@ func RETI(cpu *CPU, ops []Operand) {
 
 // DI: disables interrupts
 func DI(cpu *CPU, ops []Operand) {
-	cpu.Interrupt.DI = MASTER_SET_NEXT
+	cpu.Interrupt.DI = interrupt.MASTER_SET_NEXT
 }
 
 // EI: enables interrupts (with delay)
 func EI(cpu *CPU, ops []Operand) {
-	cpu.Interrupt.EI = MASTER_SET_NEXT
+	cpu.Interrupt.EI = interrupt.MASTER_SET_NEXT
 }
 
 // LD: puts values from one operand into another

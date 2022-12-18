@@ -36,7 +36,7 @@ func (emu *Emulator) Step() {
 		instruction.Operation(emu.CPU, instruction.Operands)
 	} else {
 		// interrupt was requested
-		if cpu.InterruptRequested(emu.CPU) {
+		if emu.CPU.Interrupt.Requested() {
 			emu.CPU.Halted = false
 		}
 	}
