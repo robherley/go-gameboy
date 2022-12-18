@@ -9,27 +9,27 @@ import (
 )
 
 type MMU struct {
-	cartridge   *cartridge.Cartridge
-	interruptRW readWriter
-	hram        *ram
-	wram        *ram
-	io          *io
-
-	debug []byte
+	cartridge *cartridge.Cartridge
+	hram      *ram
+	wram      *ram
+	serial    *serial
+	interrupt *interrupt
+	lcd       *lcd
 }
 
-func New(cart *cartridge.Cartridge, interruptRW readWriter) *MMU {
+func New(cart *cartridge.Cartridge) *MMU {
 	return &MMU{
-		cartridge:   cart,
-		interruptRW: interruptRW,
-		hram:        newHRAM(),
-		wram:        newWRAM(),
-		io:          newIO(),
+		cartridge: cart,
+		hram:      newHRAM(),
+		wram:      newWRAM(),
+		serial:    newSerial(),
+		interrupt: newInterrupt(),
+		lcd:       newLCD(),
 	}
 }
 
 func (mmu *MMU) Read8(address uint16) byte {
-	rw := mmu.readWriterFor(address)
+	rw := mmu.readerWriterFor(address)
 	if rw == nil {
 		panic(errs.NewReadError(address, "mmu"))
 	}
@@ -45,7 +45,7 @@ func (mmu *MMU) Read16(address uint16) uint16 {
 }
 
 func (mmu *MMU) Write8(address uint16, data byte) {
-	rw := mmu.readWriterFor(address)
+	rw := mmu.readerWriterFor(address)
 	if rw == nil {
 		panic(errs.NewWriteError(address, "mmu"))
 	}
@@ -64,13 +64,9 @@ func (mmu *MMU) DebugMem() {
 
 func (mmu *MMU) DebugSerial() {
 	// if first and last bits are set, read in debug data
-	if mmu.io.Read(SC_SERIAL_CONTROL) == 0x81 {
-		ch := mmu.io.Read(SB_SERIAL_TRANSFER)
-		mmu.debug = append(mmu.debug, ch)
-		mmu.io.Write(SC_SERIAL_CONTROL, 0)
-	}
-
-	if len(mmu.debug) != 0 {
-		fmt.Printf("DBG: %s\n", mmu.debug)
+	if mmu.serial.Read(SC_SERIAL_CONTROL) == 0x81 {
+		ch := mmu.serial.Read(SB_SERIAL_TRANSFER)
+		fmt.Printf("%c", ch)
+		mmu.serial.Write(SC_SERIAL_CONTROL, 0)
 	}
 }

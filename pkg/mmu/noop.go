@@ -3,24 +3,24 @@ package mmu
 import "fmt"
 
 type noop struct {
-	debug bool
+	strict bool
 }
 
-func newNoop(debug bool) *noop {
-	return &noop{debug}
+func newNoop(strict bool) *noop {
+	return &noop{strict}
 }
 
 func (n *noop) Read(address uint16) byte {
-	dummy := byte(0x0)
-
-	if n.debug {
-		fmt.Printf("NOOP[%04X] read: %02X \n", address, dummy)
+	if n.strict {
+		fmt.Printf("NOOP[%04X] read", address)
+		panic("noop: strict mode")
 	}
-	return dummy
+	return 0x0
 }
 
 func (n *noop) Write(address uint16, data byte) {
-	if n.debug {
+	if n.strict {
 		fmt.Printf("NOOP[%04X] write: %02X\n", address, data)
+		panic("noop: strict mode")
 	}
 }

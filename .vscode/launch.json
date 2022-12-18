@@ -25,7 +25,8 @@
         "dmg-acid2.gb",
         "mem_timing.gb",
         "tetris.gb",
-        "01-special.gb"
+        "01-special.gb",
+        "02-interrupts.gb"
       ],
       "default": "tetris.gb"
     },

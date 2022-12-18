@@ -20,13 +20,11 @@ func New(cart *cartridge.Cartridge) *CPU {
 		MasterEnabled: true,
 		EI:            MASTER_SET_NONE,
 		DI:            MASTER_SET_NONE,
-		enable:        0x0,
-		flag:          0x0,
 	}
 
 	return &CPU{
 		Registers: RegistersForDMG(cart),
-		MMU:       mmu.New(cart, interrupt),
+		MMU:       mmu.New(cart),
 		Interrupt: interrupt,
 		Halted:    false,
 	}
@@ -148,7 +146,7 @@ func (cpu *CPU) HandleInterrupts() {
 	// check if master flag should be disabled this cycle
 	if cpu.Interrupt.DI != MASTER_SET_NONE {
 		if cpu.Interrupt.DI == MASTER_SET_NOW {
-			cpu.Interrupt.MasterEnabled = true
+			cpu.Interrupt.MasterEnabled = false
 		}
 		cpu.Interrupt.DI--
 	}
@@ -161,13 +159,15 @@ func (cpu *CPU) HandleInterrupts() {
 		addr := interruptsToAddress[interrupt]
 
 		// only handle if *both* interrupt enable and interrupt flag are set
-		if cpu.Interrupt.IsFlagged(interrupt) && cpu.Interrupt.IsEnabled(interrupt) {
+		if InterruptTriggered(cpu, interrupt) {
 			// 1. push program counter to stack
 			cpu.StackPush16(cpu.Registers.PC)
 			// 2. set program counter to mapped interrupt address
 			cpu.Registers.PC = addr
 			// 3. clear interrupt flag
-			cpu.Interrupt.flag &= ^byte(interrupt)
+			flag := cpu.MMU.Read8(mmu.IF_INTERRUPT_FLAG)
+			flag &= ^byte(interrupt)
+			cpu.MMU.Write8(mmu.IF_INTERRUPT_FLAG, flag)
 			// 4. unhalt cpu
 			cpu.Halted = false
 			// 5. disable all interrupts

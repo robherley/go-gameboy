@@ -1,9 +1,6 @@
 package cpu
 
-import (
-	errs "github.com/robherley/go-gameboy/pkg/errors"
-	"github.com/robherley/go-gameboy/pkg/mmu"
-)
+import "github.com/robherley/go-gameboy/pkg/mmu"
 
 /*
 	Bit 0: VBlank   Interrupt Enable  (INT $40)
@@ -54,38 +51,22 @@ type Interrupt struct {
 	EI InterruptMasterChange
 	// DI: sets master to be disabled (delayed one instruction)
 	DI InterruptMasterChange
-	// (IE) enable specifies if a specific interrupt bit is enabled
-	enable byte
-	// (IF) flag identifies if a specific interrupt bit becomes set
-	flag byte
 }
 
-// Write used by MMU to set IE flag
-func (i *Interrupt) Write(address uint16, val byte) {
-	if address != mmu.IN_ENABLE_REG {
-		panic(errs.NewWriteError(address, "interrupt enable"))
-	}
-
-	i.enable = val
+func InterruptRequested(cpu *CPU) bool {
+	return cpu.MMU.Read8(mmu.IF_INTERRUPT_FLAG) != 0
 }
 
-// Read used by MMU to read IE flag
-func (i *Interrupt) Read(address uint16) byte {
-	if address != mmu.IN_ENABLE_REG {
-		panic(errs.NewWriteError(address, "interrupt enable"))
-	}
-
-	return i.enable
+func InterruptTriggered(cpu *CPU, it InterruptType) bool {
+	return InterruptEnabled(cpu, it) && InterruptFlagged(cpu, it)
 }
 
-func (i *Interrupt) IsRequested() bool {
-	return i.flag != 0
+func InterruptEnabled(cpu *CPU, it InterruptType) bool {
+	enable := cpu.MMU.Read8(mmu.IE_INTERRUPT_ENABLE)
+	return enable&byte(it) != 0
 }
 
-func (i *Interrupt) IsFlagged(it InterruptType) bool {
-	return i.flag&byte(it) != 0
-}
-
-func (i *Interrupt) IsEnabled(it InterruptType) bool {
-	return i.enable&byte(it) != 0
+func InterruptFlagged(cpu *CPU, it InterruptType) bool {
+	flag := cpu.MMU.Read8(mmu.IF_INTERRUPT_FLAG)
+	return flag&byte(it) != 0
 }
