@@ -33,8 +33,10 @@ func (emu *Emulator) Step() {
 
 		// debug.CPU(emu.CPU)
 		emu.CPU.MMU.DebugSerial()
-		instruction.Operation(emu.CPU, instruction.Operands)
+		instruction.Execute(emu.CPU)
 	} else {
+		// basically a noop
+		emu.CPU.EmulateCycles(1)
 		// interrupt was requested
 		if emu.CPU.Interrupt.Requested() {
 			emu.CPU.Halted = false

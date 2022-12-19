@@ -6,12 +6,17 @@ package cpu
 // script: https://gist.github.com/robherley/836369cbd8eb73a286d017626b8376c1
 
 type Instruction struct {
-	Operation
-	Operands []Operand
+	operation Operation
+	operands  []Operand
 }
 
-func InstructionFromOPCode(code Byte, cbprefix bool) *Instruction {
-	var mapping map[Byte]Instruction
+func (i *Instruction) Execute(cpu *CPU) {
+	i.operation(cpu, i.operands)
+	cpu.EmulateCycles(1)
+}
+
+func InstructionFromOPCode(code byte, cbprefix bool) *Instruction {
+	var mapping map[byte]Instruction
 	if cbprefix {
 		mapping = cbprefixed
 	} else {
@@ -25,7 +30,7 @@ func InstructionFromOPCode(code Byte, cbprefix bool) *Instruction {
 	return nil
 }
 
-var unprefixed = map[Byte]Instruction{
+var unprefixed = map[byte]Instruction{
 	0x00: {
 		NOP,
 		nil,
@@ -1649,7 +1654,7 @@ var unprefixed = map[Byte]Instruction{
 	},
 }
 
-var cbprefixed = map[Byte]Instruction{
+var cbprefixed = map[byte]Instruction{
 	0x00: {
 		RLC,
 		[]Operand{

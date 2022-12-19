@@ -6,46 +6,89 @@ import (
 	errs "github.com/robherley/go-gameboy/pkg/errors"
 	"github.com/robherley/go-gameboy/pkg/interrupt"
 	"github.com/robherley/go-gameboy/pkg/mmu"
+	"github.com/robherley/go-gameboy/pkg/timer"
 )
 
 type CPU struct {
 	Registers *Registers
 	MMU       *mmu.MMU
 	Interrupt *interrupt.Interrupt
+	Timer     *timer.Timer
 	Halted    bool
+	Ticks     uint64
 }
 
 // https://gbdev.io/pandocs/Power_Up_Sequence.html
 func New(cart *cartridge.Cartridge) *CPU {
-	interrupt := interrupt.New()
+	inter := interrupt.New()
+	time := timer.New(func() {
+		inter.Flag |= byte(interrupt.TIMER)
+	})
 
 	return &CPU{
 		Registers: RegistersForDMG(cart),
-		MMU:       mmu.New(cart, interrupt),
-		Interrupt: interrupt,
+		Timer:     time,
+		MMU: mmu.New(
+			cart,
+			inter,
+			time,
+		),
+		Interrupt: inter,
 		Halted:    false,
 	}
 }
 
-func (cpu *CPU) Fetch8() byte {
-	defer func() {
-		cpu.Registers.PC++
-	}()
+func (cpu *CPU) EmulateCycles(cycles int) {
+	n := cycles * 4
+	for i := 0; i < n; i++ {
+		cpu.Ticks++
+		cpu.Timer.Tick()
+	}
+}
 
-	return cpu.MMU.Read8(cpu.Registers.PC)
+func (cpu *CPU) Read8(address uint16) byte {
+	val := cpu.MMU.Read8(address)
+	cpu.EmulateCycles(1)
+	return val
+}
+
+func (cpu *CPU) Read16(address uint16) uint16 {
+	val := cpu.MMU.Read16(address)
+	cpu.EmulateCycles(1)
+	return val
+}
+
+func (cpu *CPU) Write8(address uint16, data byte) {
+	if address == interrupt.FLAG_ADDRESS || address == timer.TAC_ADDRESS || address == timer.TIMA_ADDRESS {
+		func() {}()
+	}
+
+	cpu.EmulateCycles(1)
+	cpu.MMU.Write8(address, data)
+}
+
+func (cpu *CPU) Write16(address uint16, data uint16) {
+	cpu.EmulateCycles(2)
+	cpu.MMU.Write16(address, data)
+}
+
+func (cpu *CPU) Fetch8() byte {
+	val := cpu.Read8(cpu.Registers.PC)
+	cpu.Registers.PC++
+
+	return val
 }
 
 func (cpu *CPU) Fetch16() uint16 {
-	defer func() {
-		cpu.Registers.PC += 2
-	}()
+	val := cpu.Read16(cpu.Registers.PC)
+	cpu.Registers.PC += 2
 
-	return cpu.MMU.Read16(cpu.Registers.PC)
+	return val
 }
 
 func (cpu *CPU) StackPush8(data byte) {
 	cpu.Registers.SP--
-	cpu.MMU.Write8(cpu.Registers.SP, data)
+	cpu.Write8(cpu.Registers.SP, data)
 }
 
 func (cpu *CPU) StackPush16(data uint16) {
@@ -54,8 +97,9 @@ func (cpu *CPU) StackPush16(data uint16) {
 }
 
 func (cpu *CPU) StackPop8() byte {
-	val := cpu.MMU.Read8(cpu.Registers.SP)
+	val := cpu.Read8(cpu.Registers.SP)
 	cpu.Registers.SP++
+
 	return val
 }
 
@@ -74,7 +118,7 @@ func (cpu *CPU) NextInstruction() (byte, *Instruction) {
 		opcode = cpu.Fetch8()
 	}
 
-	instruction := InstructionFromOPCode(Byte(opcode), isCB)
+	instruction := InstructionFromOPCode(opcode, isCB)
 	if instruction == nil {
 		panic(errs.NewUnknownOPCodeError(opcode))
 	}
@@ -89,7 +133,7 @@ func (cpu *CPU) Get(operand *Operand) uint16 {
 	switch symbol := operand.Symbol.(type) {
 	case Register:
 		if operand.Deref {
-			return uint16(cpu.MMU.Read8(val))
+			return uint16(cpu.Read8(val))
 		}
 		return val
 	case Address, Data, Byte:
@@ -109,9 +153,9 @@ func (cpu *CPU) Get(operand *Operand) uint16 {
 func (cpu *CPU) Set(operand *Operand, val uint16) {
 	writeFunc := func(addr uint16, data uint16) {
 		if operand.Is16() && !operand.Deref { // 16 bit load
-			cpu.MMU.Write16(addr, data)
+			cpu.Write16(addr, data)
 		} else { // 8 bit load
-			cpu.MMU.Write8(addr, byte(data))
+			cpu.Write8(addr, byte(data))
 		}
 	}
 

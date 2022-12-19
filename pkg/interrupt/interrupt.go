@@ -45,12 +45,12 @@ func (i *Interrupt) Read(address uint16) byte {
 	}
 }
 
-func (it *Interrupt) Write(address uint16, data byte) {
+func (i *Interrupt) Write(address uint16, data byte) {
 	switch address {
 	case FLAG_ADDRESS:
-		it.Flag = data
+		i.Flag = data
 	case ENABLE_ADDRESS:
-		it.Enable = data
+		i.Enable = data
 	default:
 		panic(errs.NewWriteError(address, "interrupt"))
 	}

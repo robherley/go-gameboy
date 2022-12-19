@@ -178,7 +178,7 @@ func LD(cpu *CPU, ops []Operand) {
 	if _, ok := src.Symbol.(Address); ok && src.Deref {
 		// if the source is an address and is deref, get the value
 		// this is for instruction 0xFA: LD A,(a16)
-		srcData = uint16(cpu.MMU.Read8(srcData))
+		srcData = uint16(cpu.Read8(srcData))
 	}
 
 	cpu.Set(dst, srcData)
@@ -205,12 +205,12 @@ func LD(cpu *CPU, ops []Operand) {
 func LDH(cpu *CPU, ops []Operand) {
 	if ops[0].Symbol == A { // LDH A,(a8)
 		addr := cpu.Get(&ops[1])
-		val := cpu.MMU.Read8(addr)
+		val := cpu.Read8(addr)
 		cpu.Registers.Set(A, uint16(val))
 	} else { // LDH (a8),A
 		addr := cpu.Get(&ops[0])
 		val := cpu.Get(&ops[1])
-		cpu.MMU.Write8(addr, byte(val))
+		cpu.Write8(addr, byte(val))
 	}
 }
 
@@ -506,7 +506,7 @@ func RES(cpu *CPU, ops []Operand) {
 
 	// set address if deref
 	if ops[1].Deref {
-		cpu.MMU.Write8(val, byte(result))
+		cpu.Write8(val, byte(result))
 	} else { // otherwise set register
 		reg := ops[1].Symbol.(Register)
 		cpu.Registers.Set(reg, uint16(result))

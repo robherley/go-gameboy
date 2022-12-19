@@ -92,7 +92,7 @@ func (mmu *MMU) readerWriterFor(addr uint16) readerWriter {
 	} else if SerialTransferRange.Contains(addr) {
 		return mmu.serial
 	} else if TimerDividerRange.Contains(addr) {
-		return newNoop(strict)
+		return mmu.timer
 	} else if InterruptFlagRange.Contains(addr) {
 		return mmu.interrupt
 	} else if AudioRange.Contains(addr) {

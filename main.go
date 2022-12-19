@@ -22,12 +22,6 @@ func main() {
 
 	// debug.Cart(cart)
 
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println("panic'd:", err)
-		}
-	}()
-
 	emu := emulator.New(cart)
 	emu.Boot()
 }
